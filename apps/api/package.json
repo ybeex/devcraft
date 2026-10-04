@@ -1,0 +1,39 @@
+{
+  "name": "@devcraft/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../../.env src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "db:generate": "cd ../../packages/db && prisma generate",
+    "db:push": "cd ../../packages/db && prisma db push",
+    "db:migrate": "cd ../../packages/db && prisma migrate dev"
+  },
+  "dependencies": {
+    "@devcraft/db": "workspace:*",
+    "@devcraft/types": "workspace:*",
+    "@fastify/cookie": "^11.1.2",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/formbody": "^9.0.0",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/jwt": "^10.2.2",
+    "@fastify/rate-limit": "^11.2.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^2.4.3",
+    "fastify": "^5.12.5",
+    "fastify-plugin": "^4.5.1",
+    "nodemailer": "^10.0.13",
+    "openai": "^4.67.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.7.5",
+    "@types/nodemailer": "^8.0.2",
+    "prisma": "^7.8.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
