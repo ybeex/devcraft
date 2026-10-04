@@ -1,0 +1,264 @@
+# ==========================================
+# 1. Package Managers & Global Tooling
+# ==========================================
+node_modules/
+.pnp/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.yarn/install-state.gz
+
+# pnpm
+.pnpm-store/
+pnpm-debug.log*
+
+# npm / yarn debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Turbo / Nx / Rush / Monorepo caches
+.turbo/
+.nx/
+.rush/
+.cache/
+.parcel-cache/
+
+# ==========================================
+# 2. Build Outputs & Compiled Code
+# ==========================================
+dist/
+build/
+out/
+.output/
+.public/
+
+# TypeScript
+*.tsbuildinfo
+*.tsbuildinfo.*
+
+# Babel / SWC / esbuild
+.babel-cache
+.esbuild-cache/
+.swc/
+
+# ==========================================
+# 3. Next.js (apps/web)
+# ==========================================
+.next/
+next-env.d.ts
+
+# Next.js build artifacts
+next.config.js.bak
+next.config.mjs.bak
+
+# Next.js ISR / static cache
+.cache/
+
+# ==========================================
+# 4. Prisma / Database (packages/db)
+# ==========================================
+# packages/db compiled output built alongside source (should be in dist/ but legacy artifacts)
+packages/db/index.js
+packages/db/index.js.map
+packages/db/index.d.ts
+packages/db/index.d.ts.map
+
+# packages/db scratch / ad-hoc migration files outside prisma/migrations/
+packages/db/migration.sql
+packages/db/*.sql
+!packages/db/prisma/migrations/**/*.sql
+
+# Prisma generated client (usually regenerated, unless you commit it)
+packages/db/prisma/generated/
+packages/db/generated/
+packages/db/node_modules/.prisma/
+packages/db/node_modules/@prisma/
+
+# Prisma Studio local state
+.prisma/
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.sql.bak
+
+# ==========================================
+# 5. Environment, Secrets & Local Configs
+# ==========================================
+# All .env variants EXCEPT .env.example / .env*.example
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.staging
+.env.production
+!.env.example
+!.env.*.example
+
+# Secrets / keys / certs
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_dsa
+*.gpg
+
+# ==========================================
+# 6. Testing, Coverage & Reports
+# ==========================================
+coverage/
+.nyc_output/
+.jest-cache/
+jest-junit.xml
+coverage.xml
+*.lcov
+.coveralls.yml
+
+# Playwright
+.playwright/
+test-results/
+playwright-report/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/results/
+cypress/fixtures/tmp/
+
+# Vitest
+.vitest/
+
+# ==========================================
+# 7. Linting & Formatting Caches
+# ==========================================
+.eslintcache
+.stylelintcache
+.prettiercache
+.rindo_cache/
+
+# ==========================================
+# 8. PostCSS / Tailwind / Sass
+# ==========================================
+.postcss-cache
+.sass-cache/
+
+# ==========================================
+# 9. Three.js / WebGL / Media Temp
+# ==========================================
+# Derived / compressed textures, baked meshes
+*.basis
+*.ktx2
+*.glb.bak
+*.gltf.bak
+
+# ==========================================
+# 10. IDEs, Editors & OS Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# VS Code
+.vscode/
+.vscode-test/
+*.code-workspace
+.history/
+
+# JetBrains / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Visual Studio
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vs/
+
+# Vim / Neovim
+*.swp
+*.swo
+*.swn
+.undodir/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# ==========================================
+# 11. Logs, Runtime Data & Temp
+# ==========================================
+logs/
+*.log
+npm/
+.pids
+*.pid
+*.seed
+*.pid.lock
+forever/
+*.pid
+
+# Uploads & local media storage
+uploads/
+tmp/
+temp/
+data/
+storage/
+
+# Serverless / Vercel / Netlify local state
+.vercel
+.netlify
+.serverless/
+.serverless_nextjs/
+.sst/
+
+# Storybook
+storybook-static/
+
+# Storybook build artifacts
+.storybook-out/
+
+# ==========================================
+# 12. Misc / Patch Backup
+# ==========================================
+*.orig
+*.rej
+*.bak
+*~
+
+# WakaTime local
+.wakatime-project
