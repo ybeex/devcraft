@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solace — Social Confidence for Introverts</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #fbf9f5; --cream-100: #f5f1ea; --cream-200: #ece5d8;
+    --stone-400: #a89a89; --stone-600: #6b5e51; --stone-900: #211d17;
+    --forest-500: #2c5650; --forest-600: #1f3d3a; --forest-700: #16302d;
+    --sage-100: #e9f0e5; --sage-300: #aecaa3; --sage-400: #8aab82; --sage-600: #527047;
+    --amber-300: #ecc888; --amber-500: #d9a441;
+    --r-pill: 9999px; --r-card: 20px; --r-xl: 28px;
+    --sh-rest: 0 1px 2px rgba(33,29,23,.04);
+    --sh-raised: 0 4px 12px rgba(33,29,23,.07), 0 1px 3px rgba(33,29,23,.05);
+    --sh-float: 0 16px 40px rgba(33,29,23,.12), 0 4px 10px rgba(33,29,23,.06);
+    --ease-out: cubic-bezier(.16,1,.3,1);
+    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; background: var(--cream); color: var(--stone-900); line-height: 1.6; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── TYPOGRAPHY ── */
+  .display-xl { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(52px,7vw,92px); font-weight: 300; line-height: 1.04; letter-spacing: -0.02em; }
+  .display-lg { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(38px,5vw,64px); font-weight: 300; line-height: 1.1; letter-spacing: -0.02em; }
+  .display-md { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(28px,4vw,44px); font-weight: 300; line-height: 1.15; letter-spacing: -0.02em; }
+  .em { font-style: italic; color: var(--sage-600); }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--sage-600); margin-bottom: 18px; }
+  .body-lg { font-size: clamp(16px,1.4vw,18px); color: var(--stone-600); line-height: 1.7; font-weight: 300; }
+  .body-sm { font-size: 14px; color: var(--stone-600); line-height: 1.65; font-weight: 300; }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 max(24px, 5vw); }
+  .wrap-xs { max-width: 700px; margin: 0 auto; padding: 0 max(24px, 5vw); }
+  .section { padding: 100px max(24px, 5vw); }
+  .section-sm { padding: 60px max(24px, 5vw); }
+
+  /* ── BUTTONS ── */
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: var(--r-pill); font-size: 14px; font-weight: 500; cursor: pointer; transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out), opacity 150ms; border: none; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px) scale(.985); }
+  .btn-dark { background: var(--forest-600); color: #fff; box-shadow: var(--sh-raised); }
+  .btn-dark:hover { background: var(--forest-700); box-shadow: var(--sh-float); }
+  .btn-outline { background: transparent; color: var(--stone-900); border: 1.5px solid var(--stone-900); }
+  .btn-outline:hover { background: var(--stone-900); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--sage-600); font-size: 13px; font-weight: 500; padding: 8px 0; }
+  .btn-lg { padding: 18px 36px; font-size: 15px; }
+
+  /* ── NAVIGATION ── */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 64px; background: rgba(251,249,245,.88); backdrop-filter: blur(20px) saturate(1.3); border-bottom: 1px solid var(--cream-200); transition: box-shadow .3s; }
+  nav.scrolled { box-shadow: var(--sh-raised); }
+  .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 max(24px, 5vw); height: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; color: var(--stone-900); }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a { font-size: 14px; color: var(--stone-600); font-weight: 400; transition: color .15s; }
+  .nav-links a:hover { color: var(--stone-900); }
+  .nav-cta { display: flex; align-items: center; gap: 12px; }
+
+  /* ── BREATHING LOGO MARK ── */
+  .ring-outer { animation: ring-pulse 2.4s var(--ease-out) infinite; }
+  .ring-mid { animation: ring-pulse 2.4s var(--ease-out) infinite; animation-delay: .6s; }
+  @keyframes ring-pulse { 0% { opacity: 0; transform: scale(.7); } 40% { opacity: .55; } 100% { opacity: 0; transform: scale(1.6); } }
+
+  /* ── HERO ── */
+  .hero { padding: 160px max(24px,5vw) 100px; position: relative; overflow: hidden; }
+  .hero-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 7fr 5fr; gap: 80px; align-items: center; }
+  .hero-label { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; background: var(--sage-100); border-radius: var(--r-pill); font-size: 12px; color: var(--sage-600); font-weight: 500; margin-bottom: 32px; border: 1px solid rgba(82,112,71,.15); }
+  .hero-label-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sage-400); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  .hero-subtitle { font-size: clamp(16px,1.4vw,18px); color: var(--stone-600); font-weight: 300; margin: 28px 0 44px; max-width: 520px; line-height: 1.7; }
+  .hero-trust { font-size: 12px; color: var(--stone-400); margin-top: 22px; }
+
+  /* ── APP PREVIEW ── */
+  .app-preview { position: relative; }
+  .app-card { background: white; border-radius: 24px; box-shadow: var(--sh-float); border: 1px solid var(--cream-200); overflow: hidden; transform: perspective(800px) rotateY(-4deg) rotateX(2deg); transition: transform .6s var(--ease-out); }
+  .app-card:hover { transform: perspective(800px) rotateY(-2deg) rotateX(1deg); }
+  .app-card-bar { background: var(--cream-100); padding: 12px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--cream-200); }
+  .app-card-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .app-card-content { padding: 24px; }
+  .greeting { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 300; color: var(--stone-900); margin-bottom: 4px; }
+  .greeting-sub { font-size: 12px; color: var(--stone-400); margin-bottom: 20px; }
+  .mini-energy { display: flex; gap: 8px; margin-bottom: 16px; }
+  .orb { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: white; box-shadow: 0 3px 8px rgba(0,0,0,.15), inset 0 1px 2px rgba(255,255,255,.4); }
+  .mini-stat { background: var(--sage-100); border-radius: 14px; padding: 12px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .mini-stat-label { font-size: 11px; color: var(--stone-400); }
+  .mini-stat-val { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; color: var(--stone-900); }
+  .mini-badge { background: var(--forest-600); color: white; border-radius: var(--r-pill); padding: 4px 12px; font-size: 11px; font-weight: 500; }
+  .chat-msg { border-radius: 14px; padding: 10px 14px; font-size: 12px; line-height: 1.5; margin-bottom: 8px; max-width: 80%; }
+  .chat-ai { background: var(--cream-100); color: var(--stone-600); align-self: flex-start; }
+  .chat-user { background: var(--forest-600); color: white; align-self: flex-end; margin-left: auto; }
+
+  /* ── FEATURES ── */
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1100px; margin: 0 auto; }
+  .feat-card { background: white; border-radius: var(--r-card); padding: 36px 32px; border: 1px solid var(--cream-200); box-shadow: var(--sh-rest); transition: transform .25s var(--ease-out), box-shadow .25s; }
+  .feat-card:hover { transform: translateY(-3px); box-shadow: var(--sh-float); }
+  .feat-icon { width: 52px; height: 52px; border-radius: 50%; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+  .feat-title { font-size: 16px; font-weight: 500; color: var(--stone-900); margin-bottom: 10px; }
+  .feat-body { font-size: 13px; color: var(--stone-600); line-height: 1.65; font-weight: 300; }
+  .feat-tag { display: inline-block; margin-top: 14px; padding: 4px 10px; background: var(--sage-100); border-radius: var(--r-pill); font-size: 11px; color: var(--sage-600); font-weight: 500; }
+
+  /* ── HOW IT WORKS ── */
+  .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; }
+  .how-step { position: relative; }
+  .how-num { width: 48px; height: 48px; border-radius: 50%; background: white; border: 1px solid var(--cream-200); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 300; color: var(--stone-900); margin-bottom: 20px; box-shadow: var(--sh-rest); }
+  .how-connector { position: absolute; top: 24px; left: 56px; right: 0; height: 1px; background: var(--cream-200); z-index: 0; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table { border-radius: var(--r-card); overflow: hidden; border: 1px solid var(--cream-200); box-shadow: var(--sh-rest); background: white; }
+  .compare-header { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; background: var(--cream-100); padding: 16px 24px; border-bottom: 1px solid var(--cream-200); }
+  .compare-hcell { font-size: 12px; font-weight: 600; color: var(--stone-400); text-align: center; letter-spacing: .04em; }
+  .compare-hcell.hl { color: var(--forest-600); font-weight: 700; }
+  .compare-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; padding: 14px 24px; border-bottom: 1px solid var(--cream-200); align-items: center; transition: background .12s; }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-row:hover { background: var(--cream-100); }
+  .compare-label { font-size: 13.5px; color: var(--stone-600); }
+  .compare-cell { text-align: center; font-size: 15px; }
+  .chk { color: var(--sage-600); font-weight: 700; }
+  .crs { color: var(--stone-400); }
+  .prt { color: var(--amber-500); }
+
+  /* ── TESTIMONIALS ── */
+  .tcard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1100px; margin: 0 auto; }
+  .tcard { background: white; border-radius: var(--r-card); padding: 32px; border: 1px solid var(--cream-200); box-shadow: var(--sh-rest); transition: box-shadow .25s; }
+  .tcard:hover { box-shadow: var(--sh-raised); }
+  .tcard-stars { color: var(--amber-500); font-size: 14px; margin-bottom: 14px; letter-spacing: 2px; }
+  .tcard-quote { font-size: 14px; color: var(--stone-600); line-height: 1.7; font-weight: 300; margin-bottom: 20px; font-style: italic; }
+  .tcard-name { font-size: 13px; font-weight: 500; color: var(--stone-900); }
+  .tcard-role { font-size: 12px; color: var(--stone-400); margin-top: 2px; }
+
+  /* ── STATS WIDGET ── */
+  .stats-card { background: white; border-radius: var(--r-card); padding: 40px; border: 1px solid var(--cream-200); box-shadow: var(--sh-raised); }
+  .spin-track { height: 6px; background: var(--cream-200); border-radius: var(--r-pill); margin-top: 8px; overflow: hidden; }
+  .spin-fill { height: 100%; background: linear-gradient(90deg, var(--sage-400), var(--sage-600)); border-radius: var(--r-pill); animation: bar-in .8s var(--ease-out) both; }
+  @keyframes bar-in { from { width: 0 !important; } }
+  .big-num { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 44px; font-weight: 300; color: var(--stone-900); line-height: 1; }
+  .big-num-label { font-size: 12px; color: var(--stone-400); margin-top: 4px; }
+  .big-num-sub { font-size: 11.5px; color: var(--sage-600); font-weight: 500; margin-top: 2px; }
+
+  /* ── PRICING ── */
+  .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 760px; margin: 0 auto; }
+  .pricing-card { background: white; border-radius: var(--r-card); padding: 36px; border: 1px solid var(--cream-200); box-shadow: var(--sh-rest); }
+  .pricing-card.featured { background: var(--forest-600); color: white; border-color: var(--forest-600); box-shadow: var(--sh-float); position: relative; overflow: hidden; }
+  .pricing-card.featured::before { content: 'Most popular'; position: absolute; top: 20px; right: -24px; background: var(--amber-500); color: white; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 5px 32px; transform: rotate(35deg); }
+  .price-tier { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; color: var(--stone-400); }
+  .pricing-card.featured .price-tier { color: rgba(255,255,255,.6); }
+  .price-amount { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 52px; font-weight: 300; line-height: 1; }
+  .price-per { font-size: 14px; color: var(--stone-400); margin-top: 2px; }
+  .pricing-card.featured .price-per { color: rgba(255,255,255,.6); }
+  .price-divider { height: 1px; background: var(--cream-200); margin: 24px 0; }
+  .pricing-card.featured .price-divider { background: rgba(255,255,255,.15); }
+  .price-feature { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--stone-600); margin-bottom: 12px; }
+  .pricing-card.featured .price-feature { color: rgba(255,255,255,.8); }
+  .price-check { color: var(--sage-400); font-size: 15px; flex-shrink: 0; }
+  .pricing-card.featured .price-check { color: var(--sage-300); }
+
+  /* ── CTA SECTION ── */
+  .cta-section { background: var(--stone-900); padding: 100px max(24px,5vw); text-align: center; }
+  .cta-section .display-lg { color: white; }
+  .cta-section .em { color: var(--sage-300); }
+  .cta-sub { color: rgba(255,255,255,.6); font-size: 16px; font-weight: 300; margin: 20px 0 48px; }
+
+  /* ── FOOTER ── */
+  footer { background: var(--stone-900); color: rgba(255,255,255,.5); padding: 60px max(24px,5vw) 40px; border-top: 1px solid rgba(255,255,255,.08); }
+  .footer-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; margin-bottom: 60px; }
+  .footer-col-title { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-bottom: 16px; }
+  .footer-col a { display: block; font-size: 13px; color: rgba(255,255,255,.5); margin-bottom: 10px; transition: color .15s; }
+  .footer-col a:hover { color: rgba(255,255,255,.85); }
+  .footer-bottom { max-width: 1100px; margin: 0 auto; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.08); display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+
+  /* ── REVEAL ANIMATION ── */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+  .reveal.visible { opacity: 1; transform: none; }
+  .d1 { transition-delay: .1s; } .d2 { transition-delay: .2s; } .d3 { transition-delay: .3s; } .d4 { transition-delay: .4s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero-grid, .footer-grid { grid-template-columns: 1fr; }
+    .app-preview { display: none; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .how-grid { grid-template-columns: 1fr 1fr; }
+    .tcard-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .compare-header, .compare-row { grid-template-columns: 2fr 1fr 1fr 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 640px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .how-grid { grid-template-columns: 1fr; }
+    .how-connector { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <radialGradient id="ng" cx="36%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#a8c49e"/>
+            <stop offset="55%" stop-color="#527047"/>
+            <stop offset="100%" stop-color="#1f3d3a"/>
+          </radialGradient>
+          <radialGradient id="ngl" cx="32%" cy="22%" r="28%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity=".75"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="32" cy="32" r="29.5" stroke="#1f3d3a" stroke-opacity=".16" stroke-width="1.4" fill="none" class="ring-outer"/>
+        <circle cx="32" cy="32" r="23" stroke="#1f3d3a" stroke-opacity=".26" stroke-width="1.6" fill="none" class="ring-mid"/>
+        <circle cx="32" cy="32" r="15.5" fill="url(#ng)"/>
+        <circle cx="32" cy="32" r="15.5" fill="url(#ngl)"/>
+      </svg>
+      Solace
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#science">Science</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#">Blog</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#" style="font-size:13px;color:var(--stone-600);font-weight:400;">Sign in</a>
+      <a href="#" class="btn btn-dark" style="padding:10px 22px;font-size:13px;">Start free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="background:var(--cream);">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-label">
+        <span class="hero-label-dot"></span>
+        Built specifically for social anxiety in introverts
+      </div>
+      <h1 class="display-xl reveal">
+        A quiet space to<br/>practice being<br/><span class="em">more comfortable</span><br/>in the world.
+      </h1>
+      <p class="hero-subtitle reveal d1">
+        AI conversation coaching, CBT journaling, and calm tools—designed
+        around introvert energy, not social performance. No therapist required.
+      </p>
+      <div class="reveal d2" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <a href="#" class="btn btn-dark btn-lg">Start free today</a>
+        <a href="#" class="btn btn-outline btn-lg">See how it works</a>
+      </div>
+      <p class="hero-trust reveal d3">Free forever · No credit card · Cancel Pro anytime</p>
+    </div>
+
+    <div class="app-preview reveal d1">
+      <div class="app-card">
+        <div class="app-card-bar">
+          <div class="app-card-dot" style="background:#ff5f57;"></div>
+          <div class="app-card-dot" style="background:#febc2e;"></div>
+          <div class="app-card-dot" style="background:#28c840;"></div>
+          <span style="font-size:12px;color:var(--stone-400);margin-left:8px;">Solace · Dashboard</span>
+        </div>
+        <div class="app-card-content">
+          <p class="greeting">Good evening, Maya</p>
+          <p class="greeting-sub">Welcome back to Solace</p>
+          <!-- Energy row -->
+          <p style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--stone-400);margin-bottom:8px;">Energy level</p>
+          <div class="mini-energy">
+            <div class="orb" style="background:linear-gradient(135deg,#9fb3c8,#5d7894);">1</div>
+            <div class="orb" style="background:linear-gradient(135deg,#a9c9e8,#6fa0d4);">2</div>
+            <div class="orb" style="background:linear-gradient(135deg,#bcd9b0,#7fa873);">3</div>
+            <div class="orb" style="background:linear-gradient(135deg,#cfe0a0,#9bb858);transform:scale(1.15);box-shadow:0 4px 12px rgba(0,0,0,.2);">4</div>
+            <div class="orb" style="background:linear-gradient(135deg,#ecc888,#d9a441);opacity:.4;">5</div>
+          </div>
+          <!-- Stats row -->
+          <div style="display:flex;gap:8px;margin:12px 0;">
+            <div class="mini-stat" style="flex:1;">
+              <div>
+                <div class="mini-stat-label">Streak</div>
+                <div class="mini-stat-val">12</div>
+              </div>
+              <div style="font-size:18px;">🔥</div>
+            </div>
+            <div class="mini-stat" style="flex:1;">
+              <div>
+                <div class="mini-stat-label">Sessions</div>
+                <div class="mini-stat-val">47</div>
+              </div>
+              <span class="mini-badge">Pro</span>
+            </div>
+          </div>
+          <!-- Chat preview -->
+          <p style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--stone-400);margin-bottom:8px;">Networking event intro</p>
+          <div style="display:flex;flex-direction:column;">
+            <div class="chat-msg chat-ai">Hi! I'm Alex from the design team. Great talk — what brings you to this event?</div>
+            <div class="chat-msg chat-user">Thanks! I'm exploring opportunities in product design.</div>
+            <div class="chat-msg chat-ai">Nice! [You initiated smoothly. Try a follow-up question about their work?]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="section" style="background:var(--cream-100);">
+  <div class="wrap">
+    <div class="eyebrow reveal">What's inside</div>
+    <h2 class="display-md reveal d1" style="margin-bottom:56px;max-width:560px;">
+      Six tools. One <span class="em">coherent</span> approach.
+    </h2>
+    <div class="features-grid">
+      <!-- AI Coach -->
+      <div class="feat-card reveal">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#a8c49e,#527047);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="feat-title">AI Conversation Coach</div>
+        <div class="feat-body">Practice real social scenarios — job interviews, networking, conflict — with an AI that never judges, always has time, and gives you detailed feedback without the social cost of the real thing.</div>
+        <span class="feat-tag">8 scenarios · MVP</span>
+      </div>
+      <!-- CBT Journal -->
+      <div class="feat-card reveal d1">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#a9c9e8,#6fa0d4);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="feat-title">Anxiety Reframe Journal</div>
+        <div class="feat-body">A structured CBT thought record that walks you through automatic thoughts, cognitive distortions, and balanced alternatives. AI-generated insight synthesises patterns across entries over time.</div>
+        <span class="feat-tag">10 distortions · Private option</span>
+      </div>
+      <!-- Calm Kit -->
+      <div class="feat-card reveal d2">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#d9c1ec,#a87fd4);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div class="feat-title">Calm Kit</div>
+        <div class="feat-body">Box breathing, 5-4-3-2-1 grounding, body scan, visualization, and progressive relaxation — accessible in under two taps, always. The before-and-after anxiety measurement keeps it honest.</div>
+        <span class="feat-tag">5 techniques · &lt;2 taps</span>
+      </div>
+      <!-- Energy Gauge -->
+      <div class="feat-card reveal d1">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#ecc888,#d9a441);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="feat-title">Energy Gauge</div>
+        <div class="feat-body">The introvert insight that most apps ignore: a 1–5 energy level you log daily. Challenge difficulty, quick actions, and notification frequency all adapt automatically to where you are right now.</div>
+        <span class="feat-tag">Energy-aware notifications</span>
+      </div>
+      <!-- Exposure Ladder -->
+      <div class="feat-card reveal d2">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#f0b8b8,#cc7a7a);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <div class="feat-title">Exposure Ladder</div>
+        <div class="feat-body">8 challenges graded from "wave at a neighbour" to "network with a stranger at an event." Intermediate and advanced challenges unlock based on your demonstrated engagement, not subscription tier alone.</div>
+        <span class="feat-tag">Progressive unlock · Your pace</span>
+      </div>
+      <!-- Debrief -->
+      <div class="feat-card reveal d3">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#bcd9b0,#7fa873);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="feat-title">Post-Social Debrief</div>
+        <div class="feat-body">After real-world events, log three positives, one rumination trigger, and one thing you'd change. An AI-generated reframe paragraph interrupts the spiral before it starts.</div>
+        <span class="feat-tag">AI reframe · 5 min</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:white;">
+  <div class="wrap">
+    <div class="eyebrow reveal">How it works</div>
+    <h2 class="display-md reveal d1" style="margin-bottom:56px;">
+      Four steps, then <span class="em">yours to pace.</span>
+    </h2>
+    <div class="how-grid">
+      <div class="how-step reveal">
+        <div class="how-num">1</div>
+        <div class="how-connector"></div>
+        <h4 style="font-size:15px;font-weight:500;color:var(--stone-900);margin-bottom:8px;">Assess your baseline</h4>
+        <p class="body-sm">A 17-item SPIN questionnaire establishes where you start — skippable, re-administered every 8 weeks to track real change.</p>
+      </div>
+      <div class="how-step reveal d1">
+        <div class="how-num">2</div>
+        <div class="how-connector"></div>
+        <h4 style="font-size:15px;font-weight:500;color:var(--stone-900);margin-bottom:8px;">Check your energy</h4>
+        <p class="body-sm">Log a quick 1–5 energy level each day. Everything from scenario difficulty to notification tone adapts to where you are, not where you "should" be.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">3</div>
+        <div class="how-connector"></div>
+        <h4 style="font-size:15px;font-weight:500;color:var(--stone-900);margin-bottom:8px;">Practice privately</h4>
+        <p class="body-sm">Start a coaching session, write a thought record, or use the Calm Kit — whatever fits today. No social pressure, no performance expectations.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">4</div>
+        <h4 style="font-size:15px;font-weight:500;color:var(--stone-900);margin-bottom:8px;">Build from there</h4>
+        <p class="body-sm">Streaks, exposure challenges, and buddy check-ins compound your progress across weeks and months. Re-assess at 8 weeks to see real numbers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="section-sm" style="background:var(--cream-100);padding:80px max(24px,5vw);">
+  <div class="wrap">
+    <div class="eyebrow reveal">How we compare</div>
+    <h2 class="display-md reveal d1" style="margin-bottom:48px;">
+      Built for this. <span class="em">Not adapted.</span>
+    </h2>
+    <div class="compare-table reveal d2">
+      <div class="compare-header">
+        <div class="compare-hcell" style="text-align:left;">Feature</div>
+        <div class="compare-hcell hl">Solace</div>
+        <div class="compare-hcell">Generic apps</div>
+        <div class="compare-hcell">Therapy alone</div>
+      </div>
+      <div class="compare-row"><div class="compare-label">Social anxiety-specific design</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="crs">✕</span></div><div class="compare-cell"><span class="prt">~</span></div></div>
+      <div class="compare-row"><div class="compare-label">AI conversation practice</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="crs">✕</span></div><div class="compare-cell"><span class="crs">✕</span></div></div>
+      <div class="compare-row"><div class="compare-label">CBT thought records</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="prt">~</span></div><div class="compare-cell"><span class="chk">✓</span></div></div>
+      <div class="compare-row"><div class="compare-label">Introvert energy-aware design</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="crs">✕</span></div><div class="compare-cell"><span class="crs">✕</span></div></div>
+      <div class="compare-row"><div class="compare-label">Available 24/7</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="crs">✕</span></div></div>
+      <div class="compare-row"><div class="compare-label">No social performance pressure</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="crs">✕</span></div><div class="compare-cell"><span class="chk">✓</span></div></div>
+      <div class="compare-row"><div class="compare-label">Under $10/month</div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="chk">✓</span></div><div class="compare-cell"><span class="crs">✕</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" style="background:white;">
+  <div class="wrap">
+    <div class="eyebrow reveal">Early users</div>
+    <h2 class="display-md reveal d1" style="margin-bottom:48px;">
+      What people <span class="em">actually</span> say.
+    </h2>
+    <div class="tcard-grid">
+      <div class="tcard reveal">
+        <div class="tcard-stars">★★★★★</div>
+        <p class="tcard-quote">"The AI coach doesn't judge me for stumbling over my words. I've done the networking scenario six times and I actually look forward to it now."</p>
+        <div class="tcard-name">Maya K., 26</div>
+        <div class="tcard-role">Software engineer</div>
+      </div>
+      <div class="tcard reveal d1">
+        <div class="tcard-stars">★★★★★</div>
+        <p class="tcard-quote">"I've caught the same cognitive distortion three weeks in a row. Seeing the pattern was the actual turning point, not just being told to reframe."</p>
+        <div class="tcard-name">Daniel R., 34</div>
+        <div class="tcard-role">Freelance writer</div>
+      </div>
+      <div class="tcard reveal d2">
+        <div class="tcard-stars">★★★★☆</div>
+        <p class="tcard-quote">"The energy gauge changed how I plan my week. I'm more deliberate now. My anxiety on the days I do go out has noticeably decreased."</p>
+        <div class="tcard-name">Priya S., 29</div>
+        <div class="tcard-role">Product manager</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCIENCE -->
+<section id="science" class="section">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:5fr 4fr;gap:80px;align-items:center;">
+      <div>
+        <div class="eyebrow reveal">The research</div>
+        <h2 class="display-md reveal d1" style="margin-bottom:20px;">
+          Numbers that <span class="em">mean</span> something.
+        </h2>
+        <p class="body-lg reveal d2" style="margin-bottom:24px;">
+          We use the Social Phobia Inventory (SPIN) — a clinically validated 17-item questionnaire —
+          to measure your baseline and track improvement every 8 weeks. Mobile CBT used 3+ times
+          weekly produces clinically significant anxiety reduction in 8 weeks.
+        </p>
+        <a href="#" class="btn-ghost reveal d3" style="display:inline-flex;align-items:center;gap:8px;">
+          Full research overview
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="stats-card reveal d2">
+        <p style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--stone-400);margin-bottom:20px;">Typical user progress across 8 weeks</p>
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--stone-400);margin-bottom:6px;"><span>Week 1</span><span>SPIN 42</span></div>
+          <div class="spin-track"><div class="spin-fill" style="width:100%;"></div></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--stone-400);margin-bottom:6px;"><span>Week 4</span><span>SPIN 33</span></div>
+          <div class="spin-track"><div class="spin-fill" style="width:79%;animation-delay:.25s;"></div></div>
+        </div>
+        <div style="margin-bottom:24px;">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--stone-400);margin-bottom:6px;"><span>Week 8</span><span>SPIN 26</span></div>
+          <div class="spin-track"><div class="spin-fill" style="width:62%;animation-delay:.5s;"></div></div>
+        </div>
+        <div style="display:flex;gap:28px;padding-top:20px;border-top:1px solid var(--cream-200);">
+          <div>
+            <div class="big-num">−38%</div>
+            <div class="big-num-label">avg. score reduction</div>
+            <div class="big-num-sub">in completing users</div>
+          </div>
+          <div>
+            <div class="big-num">0.54</div>
+            <div class="big-num-label">avg. effect size</div>
+            <div class="big-num-sub">digital CBT meta-analysis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="section" style="background:var(--cream-100);">
+  <div class="wrap" style="text-align:center;">
+    <div class="eyebrow reveal">Simple pricing</div>
+    <h2 class="display-md reveal d1" style="margin-bottom:16px;">
+      Free to start. <span class="em">Affordable</span> to grow.
+    </h2>
+    <p class="body-lg reveal d2" style="margin:0 auto 56px;max-width:480px;">Everything you need to make real progress is free. Pro adds the tools for sustained, measurable improvement.</p>
+    <div class="pricing-grid reveal d2">
+      <!-- Free -->
+      <div class="pricing-card">
+        <div class="price-tier">Free</div>
+        <div class="price-amount">$0</div>
+        <div class="price-per">forever</div>
+        <div class="price-divider"></div>
+        <div class="price-feature"><span class="price-check">✓</span> AI Conversation Coach (3 scenarios)</div>
+        <div class="price-feature"><span class="price-check">✓</span> CBT Journal (unlimited)</div>
+        <div class="price-feature"><span class="price-check">✓</span> Full Calm Kit</div>
+        <div class="price-feature"><span class="price-check">✓</span> Energy Gauge + Mood check-in</div>
+        <div class="price-feature"><span class="price-check">✓</span> Streak tracking</div>
+        <div class="price-feature"><span class="price-check">✓</span> Beginner exposure challenges</div>
+        <div style="margin-top:28px;">
+          <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;">Get started free</a>
+        </div>
+      </div>
+      <!-- Pro -->
+      <div class="pricing-card featured">
+        <div class="price-tier">Pro</div>
+        <div class="price-amount" style="color:white;">$9.99</div>
+        <div class="price-per">per month · $6.99/mo billed annually</div>
+        <div class="price-divider"></div>
+        <div class="price-feature"><span class="price-check">✓</span> Everything in Free</div>
+        <div class="price-feature"><span class="price-check">✓</span> All 8 AI coaching scenarios</div>
+        <div class="price-feature"><span class="price-check">✓</span> Intermediate & advanced challenges</div>
+        <div class="price-feature"><span class="price-check">✓</span> Async Buddy System pairing</div>
+        <div class="price-feature"><span class="price-check">✓</span> Post-Social Debrief + AI reframe</div>
+        <div class="price-feature"><span class="price-check">✓</span> Therapist data sharing (optional)</div>
+        <div class="price-feature"><span class="price-check">✓</span> SPIN progress reports</div>
+        <div style="margin-top:28px;">
+          <a href="#" class="btn btn-dark" style="width:100%;justify-content:center;background:white;color:var(--forest-600);">Start Pro free — 14 days</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="wrap-xs">
+    <h2 class="display-lg reveal">
+      Start where <span class="em">you are.</span>
+    </h2>
+    <p class="cta-sub reveal d1">No therapist required. No social app pressure. No judgment.<br/>Just a quiet space to practice being more comfortable in the world.</p>
+    <div class="reveal d2" style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">
+      <a href="#" class="btn btn-lg" style="background:white;color:var(--forest-600);">Download free</a>
+      <a href="#" class="btn btn-lg btn-outline" style="border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8);">See pricing</a>
+    </div>
+    <p class="reveal d3" style="margin-top:22px;font-size:12.5px;color:rgba(255,255,255,.35);">Free forever · No credit card · Cancel Pro anytime</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+          <defs>
+            <radialGradient id="fg" cx="36%" cy="30%" r="70%"><stop offset="0%" stop-color="#a8c49e"/><stop offset="100%" stop-color="#1f3d3a"/></radialGradient>
+          </defs>
+          <circle cx="32" cy="32" r="29.5" stroke="#527047" stroke-opacity=".3" stroke-width="1.4" fill="none"/>
+          <circle cx="32" cy="32" r="15.5" fill="url(#fg)"/>
+        </svg>
+        <span style="font-size:16px;font-weight:500;color:rgba(255,255,255,.8);">Solace</span>
+      </div>
+      <p style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.65;max-width:240px;font-weight:300;">A quiet space to practice social confidence. Built for introverts, grounded in CBT, powered by AI.</p>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Product</div>
+      <a href="#">Features</a><a href="#">How it works</a><a href="#">Pricing</a><a href="#">Download</a><a href="#">Changelog</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Company</div>
+      <a href="#">About</a><a href="#">Blog</a><a href="#">Science</a><a href="#">Careers</a><a href="#">Press</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Legal</div>
+      <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Accessibility</a><a href="#">Cookie policy</a><a href="#">GDPR</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Solace Inc. All rights reserved.</span>
+    <span>Not a medical device. Not a replacement for professional mental health care.</span>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll shadow
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => observer.observe(el));
+
+  // Trigger hero immediately
+  document.querySelectorAll('.hero .reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), i * 120);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DevCraft — Bugs &amp; Security Fixes Report</title>
+<style>
+:root{--canvas:#fdfbfa;--card:#f5eee6;--raised:#ebdccb;--rim:#dec5ad;--rim-sub:#eeddc8;--brand:#b27343;--ink:#221e17;--dim:#6b5647;--ghost:#b19785;--indigo:#1a3f6f;--red:#dc2626;--amber:#d97706;--green:#059669;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--canvas);color:var(--ink);line-height:1.65;font-size:14px}
+.cover{padding:60px clamp(24px,8vw,120px) 44px;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(178,115,67,.15),transparent 65%),var(--canvas);}
+.cover h1{font-family:Georgia,serif;font-size:clamp(30px,5vw,48px);font-weight:700;letter-spacing:-1px;line-height:1.12;margin-bottom:10px}
+.cover p{color:var(--dim);font-size:15px;max-width:640px}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:6px}
+.container{max-width:1020px;margin:0 auto;padding:0 clamp(24px,6vw,80px) 70px}
+
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:26px 0 10px}
+.toc a{display:block;padding:12px 14px;border-radius:12px;border:1px solid var(--rim);background:var(--card);font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none}
+.toc a span{display:block;font-size:10px;font-weight:700;color:var(--brand);margin-bottom:2px}
+
+.milestone{margin-top:56px;padding-top:44px;border-top:2px solid var(--rim)}
+.milestone-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.milestone h2{font-family:Georgia,serif;font-size:26px;font-weight:700}
+.milestone .tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--brand);color:#fff}
+.milestone-desc{color:var(--dim);font-size:13.5px;max-width:720px;margin-bottom:28px}
+
+.issue{border:1px solid var(--rim);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.issue-head{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rim);background:var(--card)}
+.sev{font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.sev-critical{background:rgba(220,38,38,.12);color:var(--red);border:1px solid rgba(220,38,38,.3)}
+.sev-high{background:rgba(178,115,67,.12);color:var(--brand);border:1px solid var(--rim)}
+.sev-medium{background:rgba(26,63,111,.1);color:var(--indigo);border:1px solid rgba(26,63,111,.25)}
+.id{font-family:monospace;font-size:11px;color:var(--ghost);flex-shrink:0;width:64px;padding-top:2px}
+.title{font-weight:700;font-size:14.5px;flex:1}
+.issue-body{padding:16px 18px}
+.detail{font-size:13px;color:var(--dim);margin-bottom:14px;line-height:1.7}
+.detail code{font-family:monospace;font-size:12px;background:var(--raised);padding:1px 5px;border-radius:4px;color:var(--brand)}
+
+.diff-pair{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:760px){.diff-pair{grid-template-columns:1fr 1fr}}
+.diff-block{border-radius:10px;overflow:hidden;border:1px solid var(--rim)}
+.diff-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:7px 12px}
+.diff-label.before{background:rgba(220,38,38,.1);color:var(--red)}
+.diff-label.after{background:rgba(5,150,105,.1);color:var(--green)}
+pre{margin:0;padding:12px 14px;font-family:'SF Mono',Consolas,monospace;font-size:11.3px;line-height:1.65;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.before pre{background:#2b1414;color:#f3d2d2}
+.after pre{background:#0f2419;color:#c9ecd9}
+.diff-block.before{border-color:rgba(220,38,38,.25)}
+.diff-block.after{border-color:rgba(5,150,105,.25)}
+
+.single-block{margin-top:6px}
+.single-block pre{background:#1c1712;color:#e8dccc;border-radius:10px;border:1px solid var(--rim)}
+
+.summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:22px 0}
+.sum-card{border-radius:14px;padding:16px;border:1px solid var(--rim);background:var(--card)}
+.sum-val{font-size:26px;font-weight:800;margin-bottom:2px}
+.sum-lbl{font-size:11px;color:var(--dim)}
+.red{color:var(--red)}.amber{color:var(--amber)}.green{color:var(--green)}.brand{color:var(--brand)}
+
+footer{padding:36px clamp(24px,6vw,80px);border-top:1px solid var(--rim);background:var(--card);font-size:11.5px;color:var(--ghost);text-align:center}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="eyebrow">DevCraft Portfolio · Consolidated Report</div>
+  <h1>Bugs &amp; Security Fixes</h1>
+  <p>Every defect and vulnerability found across all four hardening passes, with the exact before/after code for each. Ordered newest → oldest to match how the issues were actually found, across builds 0.7.0 through 0.4.0.</p>
+
+  <div class="summary">
+    <div class="sum-card"><div class="sum-val brand">4</div><div class="sum-lbl">Build milestones covered</div></div>
+    <div class="sum-card"><div class="sum-val red">4</div><div class="sum-lbl">Build-blocking errors (0.7.0)</div></div>
+    <div class="sum-card"><div class="sum-val amber">6</div><div class="sum-lbl">Functional bugs (0.4.0)</div></div>
+    <div class="sum-card"><div class="sum-val red">9</div><div class="sum-lbl">Security vulnerabilities (0.4.0)</div></div>
+    <div class="sum-card"><div class="sum-val brand">13</div><div class="sum-lbl">Type-safety defects (0.6.0)</div></div>
+    <div class="sum-card"><div class="sum-val green">All</div><div class="sum-lbl">Fixed &amp; verified</div></div>
+  </div>
+
+  <div class="toc">
+    <a href="#m070"><span>0.7.0</span>Build Pipeline &amp; Runtime</a>
+    <a href="#m060"><span>0.6.0</span>Module Resolution &amp; Types</a>
+    <a href="#m040"><span>0.4.0</span>Bugs</a>
+    <a href="#m040sec"><span>0.4.0</span>Security</a>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════ MILESTONE 0.7.0 ══════════════════════════ -->
+<div class="milestone" id="m070">
+  <div class="milestone-head"><h2>Build Pipeline &amp; Runtime Correctness</h2><span class="tag">v0.7.0</span></div>
+  <p class="milestone-desc">Surfaced by the first real <code>npm run build</code> against a live environment (Prisma 7.8.0, Zod 4.4.3). Four compiler errors were reported; three of the four fixes below go beyond the literal error message because silencing just the reported line would have produced a build that succeeds and then crashes at <code>node dist/server.js</code>.</p>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BLD-01</div><div class="title">TS6059 — file outside rootDir, and the runtime break it was hiding</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <p class="detail"><code>apps/api/tsconfig.json</code> path-mapped <code>@devcraft/db</code> straight at <code>packages/db/index.ts</code> — raw TypeScript source, outside <code>apps/api</code>'s <code>rootDir: "src"</code>. Fixing only the tsconfig would make <code>tsc</code> pass, but <code>packages/db/package.json</code>'s <code>main</code> field still pointed at that same <code>.ts</code> file — plain <code>node</code> cannot execute TypeScript, so <code>node dist/server.js</code> would fail immediately after a "successful" build. The real fix gives <code>packages/db</code> and <code>packages/types</code> real compiled output and points every reference at that.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before — packages/db/package.json</div><pre>{
+  "name": "@devcraft/db",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types":   "./index.ts",
+      "import":  "./index.ts",
+      "require": "./index.ts",
+      "default": "./index.ts"
+    }
+  }
+  // no "build" script —
+  // nothing ever compiles this
+}</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After — packages/db/package.json</div><pre>{
+  "name": "@devcraft/db",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types":  "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}</pre></div>
+      </div>
+      <div class="diff-pair" style="margin-top:10px">
+        <div class="diff-block before"><div class="diff-label before">Before — apps/api/tsconfig.json</div><pre>{
+  "compilerOptions": {
+    "rootDir": "src",
+    "paths": {
+      "@devcraft/db": [
+        "../../packages/db/index.ts"
+      ]
+    }
+  }
+}</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After — apps/api/tsconfig.json</div><pre>{
+  "compilerOptions": {
+    "rootDir": "src"
+    // paths override removed —
+    // resolves via package.json
+    // exports like any normal dep
+  }
+}</pre></div>
+      </div>
+      <p class="detail" style="margin-top:12px">Also added <code>"dependsOn": ["^build"]</code> to Turborepo's <code>dev</code> task (it already existed on <code>build</code>), so <code>pnpm dev</code> compiles <code>packages/db</code> and <code>packages/types</code> automatically before starting either app — otherwise the very first <code>pnpm dev</code> after this change would fail the same way, just in dev mode instead of prod.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BLD-02</div><div class="title">Zod v4 <code>z.record()</code> now requires two arguments</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">Zod v3 allowed <code>z.record(valueSchema)</code>, implicitly treating keys as <code>string</code>. Zod v4 requires the key schema explicitly. The installed version had drifted to v4.4.3 while <code>package.json</code> still declared a v3 range, so this passed locally and failed the moment a fresh install picked up the version actually declared as compatible.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before — projects.routes.ts:14</div><pre>metrics: z.record(
+  z.union([z.string(), z.number()])
+).nullable().default(null),</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After — projects.routes.ts:15</div><pre>metrics: z.record(
+  z.string(),
+  z.union([z.string(), z.number()])
+).nullable().default(null),</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BLD-03</div><div class="title">Prisma nullable-Json field rejects bare <code>null</code></div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">A <code>Json?</code> column can hold either a SQL <code>NULL</code> or a literal JSON <code>null</code> value — two different things. Prisma's generated types force you to be explicit about which one you mean via the <code>Prisma.JsonNull</code> sentinel; a plain JavaScript <code>null</code> (exactly what Zod's <code>.nullable().default(null)</code> produces) doesn't satisfy the generated <code>NullableJsonNullValueInput</code> type.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>const project = await app.prisma
+  .project.create({
+    data: parsed.data
+    // metrics: null goes straight in
+  });</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>function toPrismaMetrics(m: Record&lt;string, string|number&gt; | null) {
+  return m === null ? Prisma.JsonNull : m;
+}
+
+const project = await app.prisma
+  .project.create({
+    data: { ...parsed.data,
+      metrics: toPrismaMetrics(parsed.data.metrics) },
+  });</pre></div>
+      </div>
+      <p class="detail" style="margin-top:10px">Same helper applied at the <code>.update()</code> call site — both write paths funnel through it.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BLD-04</div><div class="title">Declared dependency ranges didn't match what was actually resolved</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <p class="detail">Both fixes above depend on APIs specific to Zod v4 and Prisma v7. Leaving the old ranges in <code>package.json</code> would let a future <code>pnpm install</code> on a clean machine legally resolve back to v3/v5 — re-breaking this exact code.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>"zod": "^3.23.8"
+...
+"@prisma/client": "^5.20.0"
+"prisma": "^5.20.0"</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>"zod": "^4.4.3"
+...
+"@prisma/client": "^7.8.0"
+"prisma": "^7.8.0"</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MILESTONE 0.6.0 ══════════════════════════ -->
+<div class="milestone" id="m060">
+  <div class="milestone-head"><h2>Module Resolution &amp; Type-Safety Sweep</h2><span class="tag">v0.6.0</span></div>
+  <p class="milestone-desc">A full-repository pass triggered by a real <code>Cannot find module '@devcraft/types'</code> error, which turned into a complete sweep for every remaining <code>any</code> type across both apps and the API.</p>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-01</div><div class="title">pnpm-workspace.yaml didn't exist</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <p class="detail">The root <code>package.json</code> had a <code>"workspaces"</code> field — that's a Yarn/npm convention. <code>pnpm</code> only reads <code>pnpm-workspace.yaml</code>. Without it, <code>pnpm install</code> never linked <code>@devcraft/types</code> or <code>@devcraft/db</code> into either app at all.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>devcraft/
+├── package.json   ("workspaces": [...])
+├── apps/
+├── packages/
+  (no pnpm-workspace.yaml anywhere)</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After — pnpm-workspace.yaml (new file)</div><pre>packages:
+  - "apps/*"
+  - "packages/*"</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-02</div><div class="title"><code>notFound()</code> narrowing — "post/related do not exist on type '{...} | null'"</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">Calling <code>notFound()</code> without an explicit <code>return</code> doesn't reliably narrow the surrounding variable to non-null under strict mode — TypeScript can't always prove every code path exits.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>const data = await getPost(params.slug);
+if (!data) {
+  notFound();
+}
+// data is still `{...} | null` here
+const { post, related } = data; // ERROR</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>interface BlogPostData { post: BlogPost; related: RelatedPost[]; }
+
+const data: BlogPostData | null = await getPost(params.slug);
+if (!data) {
+  return notFound();
+}
+// data is now BlogPostData — narrowed
+const { post, related } = data;</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-03</div><div class="title"><code>fetch()</code> + Next.js <code>next</code> cache option not in <code>RequestInit</code></div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">Repeated across five server component pages — Next.js augments the global <code>fetch</code> with a <code>next: { revalidate }</code> option that the standard TypeScript <code>RequestInit</code> type doesn't know about.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before (× 5 files)</div><pre>const res = await fetch(url, {
+  next: { revalidate: 300 } // ERROR:
+  // 'next' does not exist in type
+  // 'RequestInit'
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After — lib/fetch.ts (new)</div><pre>export type NextFetchInit = RequestInit & {
+  next?: { revalidate?: number|false; tags?: string[] };
+};
+
+export async function fetchJSON&lt;T&gt;(
+  url: string,
+  opts: { revalidate?: number } = {}
+): Promise&lt;T | null&gt; {
+  const res = await fetch(url, {
+    next: { revalidate: opts.revalidate ?? 300 },
+  } as NextFetchInit);
+  ...
+}</pre></div>
+      </div>
+      <p class="detail" style="margin-top:10px">The one necessary cast now lives in a single contained helper instead of being repeated (and potentially typo'd) five separate times.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-04</div><div class="title">React namespace types used without importing React</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <p class="detail">Five components (<code>Terminal.tsx</code>, <code>ReadingMode.tsx</code>, <code>ContactForm.tsx</code>, <code>AiChat.tsx</code>, <code>login/page.tsx</code>) referenced <code>React.ReactNode</code> / <code>React.FormEvent</code> / <code>React.KeyboardEvent</code> as a namespace without ever importing <code>React</code>.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>import { useState, useCallback } from "react";
+...
+interface Props {
+  children: React.ReactNode; // ERROR
+}
+const handleKey = (e: React.KeyboardEvent&lt;HTMLInputElement&gt;) =&gt; {...}</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>import {
+  useState, useCallback,
+  type ReactNode,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
+...
+interface Props {
+  children: ReactNode;
+}
+const handleKey = (e: ReactKeyboardEvent&lt;HTMLInputElement&gt;) =&gt; {...}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-05</div><div class="title">Prisma enum cast via <code>as any</code>, duplicated across two files</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <p class="detail">Device detection logic was inline in both <code>analytics.routes.ts</code> and <code>blog.routes.ts</code>, each casting a plain string to Prisma's <code>DeviceType</code> enum with <code>as any</code> to silence the type checker.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before (duplicated in 2 files)</div><pre>const device = ua.match(/mobile/i)
+  ? "MOBILE" : ua.match(/tablet/i)
+  ? "TABLET" : "DESKTOP";
+
+await prisma.pageView.create({
+  data: { path, device: device as any },
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After — utils/device.ts (new, shared)</div><pre>import { DeviceType } from "@devcraft/db";
+
+export function detectDevice(ua: string): DeviceType {
+  if (/mobile/i.test(ua)) return DeviceType.MOBILE;
+  if (/tablet/i.test(ua)) return DeviceType.TABLET;
+  return DeviceType.DESKTOP;
+}
+// call sites: device: detectDevice(ua) — no cast needed</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-06</div><div class="title">8 error responses missing <code>statusCode</code> — broke the shared <code>ApiError</code> contract</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <p class="detail"><code>ai.routes.ts</code> was written in an earlier pass than the rest of the API and never got the <code>statusCode</code> field that every other route's error responses carry, which the shared <code>ApiError</code> type requires.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before (× 8 occurrences)</div><pre>return reply.status(400).send({
+  ok: false,
+  error: parsed.error.issues[0]?.message,
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>return reply.status(400).send({
+  ok: false,
+  error: parsed.error.issues[0]?.message
+    ?? "Invalid input.",
+  statusCode: 400,
+});</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-07</div><div class="title">Insights parsing used <code>let result: any</code></div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <p class="detail">The AI model can return a bare array or wrap it in <code>{"insights": [...]}"</code> / <code>{"data": [...]}"</code> — genuinely not knowable at compile time, but that's exactly what <code>unknown</code> plus a runtime check is for, not <code>any</code>.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>let result: any;
+try {
+  const obj = JSON.parse(raw);
+  result = Array.isArray(obj) ? obj
+    : obj.insights ?? obj.data
+    ?? Object.values(obj)[0] ?? [];
+} catch { result = []; }</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>let result: unknown[] = [];
+try {
+  const parsed: unknown = JSON.parse(raw);
+  if (Array.isArray(parsed)) result = parsed;
+  else if (parsed && typeof parsed === "object") {
+    const obj = parsed as Record&lt;string, unknown&gt;;
+    const c = obj.insights ?? obj.data ?? Object.values(obj)[0];
+    if (Array.isArray(c)) result = c;
+  }
+} catch { result = []; }</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-08</div><div class="title">Locally redefined <code>type Era</code> shadowed the shared one</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <p class="detail"><code>AiProjectEnhancer.tsx</code> declared its own <code>type Era = "FOUNDATION" | "INTERNSHIP" | "SAAS"</code> instead of importing it — a silent duplication where the two definitions could drift apart if the shared type ever changed.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>type Era = "FOUNDATION" | "INTERNSHIP" | "SAAS";
+
+interface AiProjectEnhancerProps {
+  era?: Era;
+}</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>import type { Era } from "@devcraft/types";
+
+interface AiProjectEnhancerProps {
+  era?: Era;
+}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">MOD-09</div><div class="title"><code>apiFetch()</code> had no top-level error handling — a dropped connection would throw uncaught</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">Every call site assumed <code>apiFetch()</code> always resolves to <code>{ ok, data|error }</code>. It didn't — a network failure (offline, DNS error, CORS block) threw before that shape was ever produced, and three separate call sites also cast <code>URLSearchParams(params as any)</code> to work around optional/typed query params.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>async function apiFetch&lt;T&gt;(path, init) {
+  const res = await fetch(`${BASE}${path}`, {...});
+  // no try/catch — throws on network failure
+  return res.json();
+}
+// call sites:
+apiFetch(`/projects?${new URLSearchParams(params as any)}`)</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>async function apiFetch&lt;T&gt;(path, init): Promise&lt;ApiResponse&lt;T&gt;&gt; {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {...});
+  } catch (err) {
+    return { ok: false, error: String(err), statusCode: 0 };
+  }
+  return res.json();
+}
+function toQueryString(params?: Record&lt;string, QueryValue&gt;): string {...}
+// call sites: apiFetch(`/projects${toQueryString(params)}`)</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MILESTONE 0.4.0 — BUGS ══════════════════════════ -->
+<div class="milestone" id="m040">
+  <div class="milestone-head"><h2>Functional Bugs</h2><span class="tag">v0.4.0</span></div>
+  <p class="milestone-desc">Found during the first dedicated gap-analysis pass against the PRD — a mix of CSS invalidity, React lifecycle mistakes, and a route-prefix typo.</p>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BUG-01</div><div class="title">Blog post creation 404'd on every save — double-prefixed route</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <p class="detail">The route was registered as <code>POST /blog/admin</code> inside a router already mounted at the <code>/blog</code> prefix, resolving to <code>POST /blog/blog/admin</code>. The client called <code>POST /blog/admin</code> — a guaranteed 404.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>app.post("/blog/admin",
+  { preHandler: requireAuth },
+  async (request, reply) =&gt; {...}
+);</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>// prefix "/blog" already applied at
+// registration → resolves correctly
+app.post("/admin",
+  { preHandler: requireAuth },
+  async (request, reply) =&gt; {...}
+);</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BUG-02</div><div class="title">Nav scroll background used invalid CSS</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <p class="detail"><code>rgba()</code> cannot accept a CSS custom property as its r/g/b arguments — that's not how the function's grammar works. The frosted-glass scroll effect silently did nothing.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>background: scrolled
+  ? "rgba(var(--canvas-rgb, 253,251,250), 0.94)"
+  : "transparent",
+backdropFilter: scrolled ? "blur(12px)" : "none",</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>background: scrolled ? "var(--canvas)" : "transparent",
+backdropFilter: scrolled
+  ? "blur(14px) saturate(1.6)" : "none",
+WebkitBackdropFilter: scrolled
+  ? "blur(14px) saturate(1.6)" : "none",</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BUG-03</div><div class="title">Scroll-reveal observer reconnected on every render</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">Missing dependency array meant the <code>useEffect</code> ran after every render — disconnecting and recreating the <code>IntersectionObserver</code> even on unrelated state changes like a form keystroke, briefly losing observed state on every <code>.reveal</code> element.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>useEffect(() =&gt; {
+  const observer = new IntersectionObserver(handleEntry, {...});
+  document.querySelectorAll(".reveal")
+    .forEach(el =&gt; observer.observe(el));
+  return () =&gt; observer.disconnect();
+}); // ← no deps array: runs every render</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>useEffect(() =&gt; {
+  const io = new IntersectionObserver(handleEntry, {...});
+  const observe = () =&gt; {
+    document.querySelectorAll(".reveal:not([data-rv])")
+      .forEach(el =&gt; { io.observe(el); el.dataset.rv = "1"; });
+  };
+  observe();
+  const mo = new MutationObserver(observe);
+  mo.observe(document.body, { childList: true, subtree: true });
+  return () =&gt; { io.disconnect(); mo.disconnect(); };
+}, []); // ← stable, runs once</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BUG-04</div><div class="title">D3 charts froze the wrong palette after a dark-mode toggle</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">CSS custom properties were read once, at mount, and the resolved hex values baked directly into SVG attributes. Toggling dark mode changed the variables but not the already-painted chart.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>useEffect(() =&gt; {
+  const brand = getCSSVar("--brand");
+  // ...draws chart using `brand`, once
+}, [data]); // dark mode not in deps</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>function useDarkMode(): boolean {
+  const [dark, setDark] = useState(false);
+  useEffect(() =&gt; {
+    const check = () =&gt; setDark(
+      document.documentElement.classList.contains("dark"));
+    check();
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement,
+      { attributes: true, attributeFilter: ["class"] });
+    return () =&gt; mo.disconnect();
+  }, []);
+  return dark;
+}
+// in each chart:
+const dark = useDarkMode();
+useEffect(() =&gt; {...}, [data, dark]); // redraws on toggle</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BUG-05</div><div class="title">Hero.tsx used <code>next/dynamic</code> without <code>"use client"</code></div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>import dynamic from "next/dynamic";
+import { KofarIcon, ZaureArch } from "@/components/hausa";</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>"use client";
+
+import dynamic from "next/dynamic";
+import { KofarIcon, ZaureArch } from "@/components/hausa";</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">BUG-06</div><div class="title">Admin session silently dropped on every page refresh</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <p class="detail">The access token lived only in a module-level JS variable. Any hard refresh cleared it; the dashboard would then flash logged-out before the silent-refresh-from-cookie flow could complete.</p>
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>let _accessToken: string | null = null;
+export function setToken(t: string | null) { _accessToken = t; }
+export function getToken() { return _accessToken; }
+// gone on every reload</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>let memoryToken: string | null = null;
+export function setToken(t: string | null) {
+  memoryToken = t;
+  try {
+    if (t) sessionStorage.setItem("__dc_at", t);
+    else sessionStorage.removeItem("__dc_at");
+  } catch {}
+}
+export function getToken() {
+  if (memoryToken) return memoryToken;
+  try {
+    const cached = sessionStorage.getItem("__dc_at");
+    if (cached) { memoryToken = cached; return cached; }
+  } catch {}
+  return null;
+}</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MILESTONE 0.4.0 — SECURITY ══════════════════════════ -->
+<div class="milestone" id="m040sec">
+  <div class="milestone-head"><h2>Security Vulnerabilities</h2><span class="tag">v0.4.0</span></div>
+  <p class="milestone-desc">Same audit pass, security-focused half. Ordered by severity.</p>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-01</div><div class="title">No request body size limit</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>const app = Fastify({ logger: {...} });
+// no bodyLimit — Fastify default (1MB)
+// applies to every route uniformly</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>const app = Fastify({
+  bodyLimit: 512 * 1024, // 512KB global
+  logger: {...},
+});
+// tighter limit on public AI chat:
+app.post("/chat/stream", {
+  bodyLimit: 5 * 1024,
+  config: { rateLimit: { max: 15, timeWindow: "1 minute" } },
+}, handler);</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-02</div><div class="title">No security headers anywhere</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>await app.register(cors, {...});
+await app.register(cookie, {...});
+// no helmet, no CSP, no frame options</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>await app.register(helmet, {
+  contentSecurityPolicy: { directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc:  ["'self'"],
+    frameSrc:   ["'none'"],
+    objectSrc:  ["'none'"],
+    connectSrc: ["'self'", "https://openrouter.ai"],
+  }},
+});
+// + matching headers() block in next.config.ts</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-03</div><div class="title">No defense against prompt injection on the public AI chat</div><span class="sev sev-critical">CRITICAL</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>const stream = await openrouter.chat.completions.create({
+  messages: [
+    { role: "system", content: portfolioChatSystem(ctx) },
+    ...messages, // raw user input, unfiltered
+  ],
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>const INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?(previous|prior)\s+instructions?/i,
+  /you\s+are\s+now\s+(a|an|the)\s+/i,
+  /reveal\s+(your\s+)?(system\s+)?prompt/i,
+  // ...
+];
+function sanitizeUserMessage(text: string) {
+  const flagged = INJECTION_PATTERNS.some(re =&gt; re.test(text));
+  const clean = text.replace(/&lt;\|[^|]+\|&gt;/g, "").slice(0, 4000);
+  return { clean, flagged };
+}
+// + a trailing system guard message appended after user turns</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-04</div><div class="title"><code>OPENROUTER_API_KEY</code> unvalidated at startup</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>// server just boots — first sign of
+// a missing key is an opaque 500 on
+// the first real AI request</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>if (!process.env.OPENROUTER_API_KEY) {
+  console.warn(
+    "[startup] ⚠ OPENROUTER_API_KEY not set — " +
+    "AI features will be unavailable"
+  );
+}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-05</div><div class="title">Analytics referrer stored without validation</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>await prisma.pageView.create({
+  data: { path, referrer: referrer ?? null, device },
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>function sanitizeReferrer(referrer?: string): string | null {
+  if (!referrer) return null;
+  try {
+    const u = new URL(referrer);
+    return (u.protocol === "http:" || u.protocol === "https:")
+      ? referrer.slice(0, 500) : null;
+  } catch { return null; }
+}
+// ...
+data: { path, referrer: sanitizeReferrer(referrer), device },</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-06</div><div class="title">JWT secret used a non-null assertion instead of real validation</div><span class="sev sev-high">HIGH</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>await app.register(jwt, {
+  secret: process.env.JWT_SECRET!, // silences TS,
+  sign: { expiresIn: "15m" },      // does nothing at runtime
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>function requireEnv(name: string, minLength = 1): string {
+  const val = process.env[name];
+  if (!val || val.length &lt; minLength) {
+    throw new Error(`[startup] Missing or invalid env var: ${name}`);
+  }
+  return val;
+}
+const JWT_SECRET = requireEnv("JWT_SECRET", 32);
+await app.register(jwt, { secret: JWT_SECRET, sign: { expiresIn: "15m" } });</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-07</div><div class="title">No disposable-email defense on subscribe</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>const SubscribeSchema = z.object({
+  email: z.string().email(),
+  name: z.string().max(80).optional(),
+});
+// any syntactically-valid email accepted</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>const DISPOSABLE_DOMAINS = new Set([
+  "mailinator.com", "guerrillamail.com", "10minutemail.com",
+  /* ...22 total */
+]);
+const domain = email.split("@")[1]?.toLowerCase() ?? "";
+if (DISPOSABLE_DOMAINS.has(domain)) {
+  return reply.status(400).send({
+    ok: false, error: "Please use a permanent email address.",
+    statusCode: 400,
+  });
+}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-08</div><div class="title">Admin AI endpoint accepted an unbounded token limit from the client</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>const { maxTokens } = request.body;
+const completion = await openrouter.chat.completions.create({
+  max_tokens: maxTokens ?? 1000, // client-controlled, no ceiling
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>const effectiveMax = Math.min(
+  maxTokens ?? 1000,
+  cfg.maxTokens ?? 4000,
+  4000 // hard ceiling regardless of input
+);
+const completion = await openrouter.chat.completions.create({
+  max_tokens: effectiveMax,
+});</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="issue-head"><div class="id">SEC-09</div><div class="title"><code>CORS_ORIGIN</code> used with no validation</div><span class="sev sev-medium">MEDIUM</span></div>
+    <div class="issue-body">
+      <div class="diff-pair">
+        <div class="diff-block before"><div class="diff-label before">Before</div><pre>await app.register(cors, {
+  origin: process.env.CORS_ORIGIN, // any string, unchecked
+  credentials: true,
+});</pre></div>
+        <div class="diff-block after"><div class="diff-label after">After</div><pre>const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? "http://localhost:3000")
+  .split(",").map(o =&gt; {
+    const trimmed = o.trim();
+    try { new URL(trimmed); } catch {
+      throw new Error(`[startup] Invalid CORS_ORIGIN: "${trimmed}"`);
+    }
+    return trimmed;
+  });
+await app.register(cors, {
+  origin: (origin, cb) =&gt; cb(null, !origin || ALLOWED_ORIGINS.includes(origin)),
+  credentials: true,
+});</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<footer>DevCraft Bugs &amp; Security Report · Consolidated across builds 0.4.0 → 0.7.0 · All issues verified fixed at time of writing.</footer>
+</body>
+</html>
