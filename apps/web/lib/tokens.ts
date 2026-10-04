@@ -1,0 +1,51 @@
+// Desert Monarch token set — mirrors globals.css exactly.
+// Used in both CSS custom properties and inline styles.
+
+export const tokens = {
+  light: {
+    canvas:      "#f1ecde",
+    card:        "#e7dfc9",
+    raised:      "#dcd0af",
+    rim:         "#c7b78c",
+    rimSub:      "#dace9f",
+    brand:       "#a2762a",
+    brandHover:  "#8a6321",
+    brandMuted:  "rgba(162,118,42,.12)",
+    brandGlow:   "rgba(162,118,42,.35)",
+    onBrand:     "#fbf6ea",
+    ink:         "#1c2036",
+    dim:         "#5b5847",
+    ghost:       "#93876b",
+    indigo:      "#2e4488",
+    indigoBg:    "rgba(46,68,136,.08)",
+    posBg:       "#dcfce7",
+    posText:     "#15803d",
+    negBg:       "#fee2e2",
+    negText:     "#b91c1c",
+    fontBody:    "DM Sans",
+  },
+  dark: {
+    canvas:      "#0d1220",
+    card:        "#161c30",
+    raised:      "#1e2740",
+    rim:         "#313d63",
+    rimSub:      "#232c47",
+    brand:       "#d4ac55",
+    brandHover:  "#e7c371",
+    brandMuted:  "rgba(212,172,85,.14)",
+    brandGlow:   "rgba(212,172,85,.35)",
+    onBrand:     "#191225",
+    ink:         "#f4efe3",
+    dim:         "#acb2c9",
+    ghost:       "#6c7292",
+    indigo:      "#6d8ddb",
+    indigoBg:    "rgba(109,141,219,.1)",
+    posBg:       "#064e3b",
+    posText:     "#34d399",
+    negBg:       "#450a0a",
+    negText:     "#fca5a5",
+    fontBody:    "DM Sans",
+  },
+} as const;
+
+export type ThemeTokens = typeof tokens.light;
