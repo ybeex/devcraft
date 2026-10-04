@@ -7,6 +7,14 @@ let apiHostname = "localhost";
 try { apiHostname = new URL(API_URL).hostname; } catch {}
 
 const config: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/api/auth/:path*",
+        destination: `${API_URL}/auth/:path*`,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
