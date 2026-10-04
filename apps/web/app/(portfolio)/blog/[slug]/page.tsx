@@ -17,7 +17,7 @@ import { IconFill } from "@/components/ui/IconFill";
 import { AiChat }          from "@/components/portfolio/AiChat";
 import { CustomCursor }    from "@/components/ui/Cursor";
 import { ScrollInit }      from "../../ScrollInit";
-import { ReadingMode } from "@/components/portfolio/ReadingMode.client"
+import { ReadingMode } from "../../../../components/portfolio/ReadingMode.client"
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 // FR-021: Reading mode is client-only (Canvas + Selection API)
