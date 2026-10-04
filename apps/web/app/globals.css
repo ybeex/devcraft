@@ -1,0 +1,1515 @@
+@import "tailwindcss";
+
+/* ── TAILWIND V4 THEME — font utilities ──────────────────────────────────────
+   `inline` is required (not plain @theme) because these values come from
+   next/font's `variable` option, injected onto <body> at runtime via a
+   className. Plain @theme tries to resolve/bake the value at build time,
+   before that class exists in the DOM, and silently fails. `inline` defers
+   resolution to the browser at the point of use, same as a normal CSS
+   variable lookup — see layout.tsx for the matching --font-display/
+   --font-dm/--font-bricolage/--font-mono declarations.
+   ────────────────────────────────────────────────────────────────────────── */
+@theme inline {
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-mono), "Fira Code", monospace;
+}
+
+/* ── FONT IMPORTS ───────────────────────────────────────────────────────────── */
+/* Loaded via next/font/google in layout.tsx — no @import needed */
+
+/* ── DESERT MONARCH CSS CUSTOM PROPERTIES ───────────────────────────────────── */
+
+:root {
+  /* Light mode — "raw cotton" — unbleached cloth, deep-indigo ink, brass thread */
+  --canvas:      #f1ecde;
+  --card:        #e7dfc9;
+  --raised:      #dcd0af;
+  --rim:         #c7b78c;
+  --rim-sub:     #dace9f;
+  --brand:       #a2762a;
+  --brand-hover: #8a6321;
+  --brand-muted: rgba(162, 118, 42, 0.12);
+  --brand-glow:  rgba(162, 118, 42, 0.35);
+  --footer-glow: rgba(255, 253, 244, 0.9);
+  --on-brand:    #fbf6ea;
+  --ink:         #1c2036;
+  --dim:         #5b5847;
+  --ghost:       #93876b;
+  --indigo:      #2e4488;
+  --indigo-bg:   rgba(46, 68, 136, 0.08);
+  --pos-bg:      #dcfce7;
+  --pos-text:    #15803d;
+  --neg-bg:      #fee2e2;
+  --neg-text:    #b91c1c;
+  --font-body:   var(--font-dm), system-ui, sans-serif;
+}
+
+/* Dark mode — "night dye-vat" — the primary, signature look */
+.dark {
+  --canvas:      #0d1220;
+  --card:        #161c30;
+  --raised:      #1e2740;
+  --rim:         #313d63;
+  --rim-sub:     #232c47;
+  --brand:       #d4ac55;
+  --brand-hover: #e7c371;
+  --brand-muted: rgba(212, 172, 85, 0.14);
+  --brand-glow:  rgba(212, 172, 85, 0.35);
+  --footer-glow: rgba(212, 172, 85, 0.35);
+  --on-brand:    #191225;
+  --ink:         #f4efe3;
+  --dim:         #acb2c9;
+  --ghost:       #6c7292;
+  --indigo:      #6d8ddb;
+  --indigo-bg:   rgba(109, 141, 219, 0.1);
+  --pos-bg:      #064e3b;
+  --pos-text:    #34d399;
+  --neg-bg:      #450a0a;
+  --neg-text:    #fca5a5;
+  --font-body:   var(--font-dm), system-ui, sans-serif;
+}
+
+/* ── TYPE SCALE — DEVCRAFT ────────────────────────────────────────────────
+   Every text size in the app should map to one of these steps. Replaces
+   16 scattered one-off pixel values (9-32px, no ratio) that had accumulated
+   across components with a deliberate, named scale. Outlier sizes that had
+   near-identical neighbors (9→2xs, 15→md, 17→lg, 19→xl, 22→2xl, 26→3xl)
+   were folded in rather than kept as their own step. */
+:root, .dark {
+  --text-3xs: 10px; /* micro chrome: watermark labels, dense table meta   */
+  --text-2xs: 11px; /* fine print, badge text                            */
+  --text-xs:  12px; /* captions, small labels                            */
+  --text-sm:  13px; /* secondary UI copy                                 */
+  --text-base:14px; /* primary UI body text                              */
+  --text-md:  16px; /* emphasized body / lead copy                       */
+  --text-lg:  18px; /* card titles, small headings                       */
+  --text-xl:  20px; /* section sub-headings                              */
+  --text-2xl: 24px; /* section headings                                  */
+  --text-3xl: 28px; /* feature headings                                  */
+  --text-4xl: 32px; /* hero-adjacent display                             */
+
+  /* Elevation — 3 shadow levels, replacing one-off shadow values authored
+     per component. rgba channel is separate from opacity so dark mode can
+     use the same levels at a slightly lower opacity below. */
+  --shadow-rgb: 0, 0, 0;
+  --elevation-1: 0 2px 10px -4px rgba(var(--shadow-rgb), 0.14);
+  --elevation-2: 0 10px 28px -10px rgba(var(--shadow-rgb), 0.20);
+  --elevation-3: 0 20px 44px -14px rgba(var(--shadow-rgb), 0.30);
+
+  /* One on-brand focus ring, reused everywhere instead of the previous mix
+     of "browser default" and "nothing" across nav, CTAs, and dashboard. */
+  --focus-ring: 0 0 0 2px var(--canvas), 0 0 0 4.5px var(--brand);
+}
+.dark {
+  --shadow-rgb: 0, 0, 0;
+  --elevation-1: 0 2px 10px -4px rgba(var(--shadow-rgb), 0.45);
+  --elevation-2: 0 10px 28px -10px rgba(var(--shadow-rgb), 0.55);
+  --elevation-3: 0 20px 44px -14px rgba(var(--shadow-rgb), 0.65);
+}
+
+/* ── FOCUS RING (global) ──────────────────────────────────────────────────
+   :focus-visible only fires for real keyboard/AT navigation, never for a
+   mouse/touch click, so this never shows up as an unwanted "click flash." */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.ease-site-out { transition-timing-function: var(--ease-out); }
+
+/* ── MOTION TIMING TOKENS ─────────────────────────────────────────────────
+   Formalizes curves that were already the app's de facto standard (grep
+   confirmed cubic-bezier(0.22,1,0.36,1) was already used 19 times before
+   this token existed) rather than inventing new ones. Every transition/
+   animation in this file should reference these three, not a literal
+   cubic-bezier(...), so the whole app's motion stays visibly one language. */
+:root {
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);    /* micro-feedback, reveals, card hovers: 250-400ms */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* overlays, magnetic buttons, sliding pills: 350-700ms */
+  --ease-drift:  cubic-bezier(0.45, 0, 0.55, 1);    /* slow ambient loops only (aska-drift) */
+  --stagger:     40ms;
+}
+
+/* ── LIQUID GLASS MATERIAL SYSTEM ─────────────────────────────────────────
+   Brand-tinted frosted glass, not generic white-card-on-purple-blob glass.
+   Kept as its own token layer rather than redefining --card, because a few
+   text-dense surfaces (syntax-highlighted code, dropdown menus over busy
+   content) still need full opacity to stay legible — those opt out below. */
+:root {
+  --glass-bg:        rgba(231, 223, 201, 0.46);
+  --glass-bg-strong: rgba(231, 223, 201, 0.74);
+  --glass-border:    rgba(199, 183, 140, 0.6);
+  --glass-highlight: rgba(255, 255, 255, 0.55);
+  --glass-blur:      blur(30px) saturate(2);
+}
+.dark {
+  --glass-bg:        rgba(22, 28, 48, 0.46);
+  --glass-bg-strong: rgba(22, 28, 48, 0.74);
+  --glass-border:    rgba(80, 95, 145, 0.45);
+  --glass-highlight: rgba(255, 255, 255, 0.07);
+  --glass-blur:      blur(30px) saturate(2);
+}
+
+.dash-panel, .glass-panel {
+  position: relative;
+  border-radius: 16px;
+  /* Dashboard content is uniformly text-dense (tables, forms, settings)
+     sitting over the shell's hatch pattern and drifting light blooms —
+     the lighter --glass-bg (55%) risked marginal contrast in spots where
+     a bloom or hatch line crossed small text, so this uses the same
+     --glass-bg-strong fill as the text-heavy public-site cards. */
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), var(--elevation-1);
+  transition: box-shadow 0.35s var(--ease-out),
+              border-color 0.35s var(--ease-out),
+              transform 0.35s var(--ease-out),
+              background 0.35s ease;
+}
+/* Text-dense panels (forms with long copy, code blocks) opt into a higher
+   fill so body text stays comfortably above AA contrast over the blur. */
+.glass-panel-strong { background: var(--glass-bg-strong); }
+
+.dash-panel-interactive:hover, .glass-panel-interactive:hover {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--glass-border));
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), var(--elevation-2);
+  transform: translateY(-2px);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  /* No backdrop-filter support: fall back to a solid, fully legible panel
+     rather than a flat, half-transparent one nothing is blurring. */
+  .dash-panel, .glass-panel { background: var(--card); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-panel, .glass-panel { transition: none; }
+  .cursor-star-inner, .cursor-star-outer { animation: none; }
+}
+
+/* Ambient light blooms — brand gold + indigo, not generic purple/blue —
+   give the glass panels sitting on top of them something real to diffract.
+   Slow drift only when motion is allowed; the blooms are still visible,
+   just static, under prefers-reduced-motion. */
+.ambient-glow { position: relative; isolation: isolate; }
+.ambient-glow::before, .ambient-glow::after {
+  content: ""; position: absolute; z-index: -1; border-radius: 50%;
+  filter: blur(90px); pointer-events: none;
+}
+.ambient-glow::before {
+  width: 480px; height: 480px; top: -140px; left: -100px; opacity: 0.35;
+  background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
+}
+.ambient-glow::after {
+  width: 420px; height: 420px; bottom: -160px; right: -80px; opacity: 0.22;
+  background: radial-gradient(circle, var(--indigo) 0%, transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ambient-glow::before { animation: ambientDrift 19s ease-in-out infinite alternate; }
+  .ambient-glow::after  { animation: ambientDrift 24s ease-in-out infinite alternate-reverse; }
+}
+@keyframes ambientDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(34px, 22px) scale(1.1); }
+}
+
+/* ── BASE ─────────────────────────────────────────────────────────────────── */
+/* Wrapped in @layer base — required under Tailwind v4's real CSS cascade
+   layers. Unlayered CSS always wins over layered CSS regardless of
+   specificity, and Tailwind's own utilities (p-*, px-*, m-*, etc.) live
+   inside its internal layer system. Leaving this reset unlayered meant it
+   silently beat every spacing utility on the site, no matter how specific —
+   this is what was actually causing padding to appear "not applying." */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Restore default cursor in dashboard (admin only) */
+.dashboard-layout {
+  cursor: default;
+}
+
+/* Tailwind's preflight sets `cursor: pointer` directly on interactive
+   elements. A direct rule on an element always wins over an inherited
+   value from body, regardless of specificity — this is why the native
+   cursor was still appearing over buttons/links/inputs despite
+   `body { cursor: none }` above. !important mirrors the same technique
+   already used below to restore native cursors inside .dashboard-layout,
+   just inverted for the public site. */
+/* The custom cursor is an enhancement for mouse users only. Keeping the
+   browser cursor everywhere else prevents utility routes (which do not mount
+   CustomCursor) and touch/hybrid devices from losing their primary affordance. */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  label,
+  [role="button"] {
+    cursor: none !important;
+  }
+}
+
+/* ── SCROLLBAR ────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: var(--canvas); }
+::-webkit-scrollbar-thumb    { background: var(--rim); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand); }
+
+/* ── CUSTOM CURSOR — Hausa Aesthetic (Rub el Hizb 8-Pointed Cross-Star) ─── */
+
+/* Inner 8-pointed star */
+.cursor-dot {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.25s var(--ease-out),
+              filter 0.25s,
+              color 0.25s;
+  filter: drop-shadow(0 0 4px var(--brand-glow));
+  color: var(--brand);
+}
+
+.cursor-star-inner {
+  width: 100%;
+  height: 100%;
+  animation: cursor-spin 8s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.cursor-dot.is-button {
+  transform: translate(-50%, -50%) scale(1.6);
+  filter: drop-shadow(0 0 8px var(--brand-glow))
+          drop-shadow(0 0 20px var(--brand-glow));
+  color: var(--brand-hover);
+}
+
+/* .cursor-dot.is-button .cursor-star-inner {
+  animation: cursor-spin-bounce 1.6s ease-in-out infinite;
+} */
+
+/* Text/typing contexts — smaller, cooler, and calmer than the default
+   idle spin, distinct from both normal and button-hover */
+.cursor-dot.is-text {
+  transform: translate(-50%, -50%) scale(0.55);
+  filter: drop-shadow(0 0 3px var(--indigo-bg));
+  color: var(--indigo);
+}
+
+.cursor-dot.is-text .cursor-star-inner {
+  animation-duration: 20s;
+}
+
+/* Outer 8-pointed star frame (trailing) */
+.cursor-ring {
+  position: fixed;
+  width: 38px;
+  height: 38px;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.35s var(--ease-out),
+              height 0.35s var(--ease-out),
+              filter 0.35s;
+  color: var(--brand);
+  display: none;
+}
+
+.cursor-star-outer {
+  width: 100%;
+  height: 100%;
+  animation: cursor-spin-reverse 16s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.cursor-outer-sq {
+  stroke: var(--brand);
+  opacity: 0.45;
+  transition: opacity 0.3s, stroke-width 0.3s, fill 0.3s;
+}
+
+/* Hover state — expand, fill and glow */
+.cursor-ring.is-hovering {
+  width: 54px;
+  height: 54px;
+  filter: drop-shadow(0 0 14px var(--brand-glow));
+}
+
+.cursor-ring.is-hovering .cursor-outer-sq {
+  opacity: 0.75;
+  stroke-width: 2;
+  fill: var(--brand-muted);
+}
+
+.cursor-ring.is-hovering .cursor-star-outer {
+  animation-duration: 5s;
+}
+
+/* Keyframes */
+@keyframes cursor-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes cursor-spin-reverse {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+/* Rotation + bounce combined into one keyframe deliberately — two separate
+   `animation` entries both animating `transform` would just override each
+   other rather than combine. */
+@keyframes cursor-spin-bounce {
+  0%   { transform: rotate(0deg)   translateY(0); }
+  20%  { transform: rotate(72deg)  translateY(-3px); }
+  40%  { transform: rotate(144deg) translateY(0); }
+  60%  { transform: rotate(216deg) translateY(-3px); }
+  80%  { transform: rotate(288deg) translateY(0); }
+  100% { transform: rotate(360deg) translateY(0); }
+}
+
+
+/* ── REVEAL ANIMATIONS (bidirectional scroll) ─────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(3px);
+  transition:
+    opacity 0.55s var(--ease-out),
+    transform 0.55s var(--ease-out),
+    filter 0.4s ease;
+}
+
+.reveal.from-top {
+  transform: translateY(-28px);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* ── JOURNEY CARDS: horizontal entrance from their own side ───────────────
+   Each card slides in from the side of the spine it sits on (left-column
+   cards from the left, right-column from the right) instead of the generic
+   upward .reveal. It stays bidirectional like every other .reveal — leaving
+   the viewport re-arms it — but .from-top is neutralised here so scrolling
+   back up doesn't flip a card onto a vertical path; it always re-enters
+   from its own side. Single-column (mobile) layout has the spine on the
+   left, so every card enters from the right. */
+.reveal.journey-card,
+.reveal.journey-card.from-top {
+  transform: translateX(var(--jx, 44px));
+}
+.reveal.journey-card.is-visible {
+  transform: translateX(0);
+}
+@media (min-width: 860px) {
+  .journey-row[data-side="left"]  .reveal.journey-card { --jx: -80px; }
+  .journey-row[data-side="right"] .reveal.journey-card { --jx: 80px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal.journey-card,
+  .reveal.journey-card.from-top { transform: none; }
+}
+
+/* Stagger children inside a .reveal-group */
+.reveal-group .reveal:nth-child(1) { transition-delay: 0ms; }
+.reveal-group .reveal:nth-child(2) { transition-delay: 70ms; }
+.reveal-group .reveal:nth-child(3) { transition-delay: 140ms; }
+.reveal-group .reveal:nth-child(4) { transition-delay: 210ms; }
+.reveal-group .reveal:nth-child(5) { transition-delay: 280ms; }
+.reveal-group .reveal:nth-child(6) { transition-delay: 350ms; }
+
+/* ── MAGNETIC BUTTON ─────────────────────────────────────────────────────── */
+
+.mag-btn {
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s ease;
+}
+.mag-btn:hover {
+  transform: scale(1.04) translateY(-2px);
+  box-shadow: 0 8px 24px -6px var(--brand-glow);
+}
+
+.magnetic-wrap { display: inline-block; }
+
+/* Liquid sheen sweep — a soft diagonal light-catch that travels across a
+   button on hover. Purely decorative: nothing about the button's meaning
+   (focus, press, disabled) depends on it, so it's simply absent rather than
+   reduced under prefers-reduced-motion. */
+.btn-liquid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.22) 45%, rgba(255, 255, 255, 0.22) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn-liquid:hover::before {
+    transform: translateX(120%);
+    transition: transform 0.7s var(--ease-out);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .magnetic-wrap { transform: none !important; }
+}
+
+/* ── PULSE DOT ───────────────────────────────────────────────────────────── */
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50%       { opacity: 0.4; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── HAUSA SVG PATH DRAW-ON ──────────────────────────────────────────────── */
+
+.draw-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.draw-path.is-visible {
+  animation: draw-path 0.9s var(--ease-out) both;
+}
+
+@keyframes draw-path {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Stagger the 8 blades of the Aska Takwas signature motif as they stitch in */
+.aska-group .aska-blade { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; }
+.aska-group.is-visible .aska-blade {
+  opacity: 1;
+  animation: draw-path 1.15s var(--ease-out) both;
+}
+.aska-group.is-visible .aska-blade:nth-child(1) { animation-delay: 0.15s; }
+.aska-group.is-visible .aska-blade:nth-child(2) { animation-delay: 0.24s; }
+.aska-group.is-visible .aska-blade:nth-child(3) { animation-delay: 0.33s; }
+.aska-group.is-visible .aska-blade:nth-child(4) { animation-delay: 0.42s; }
+.aska-group.is-visible .aska-blade:nth-child(5) { animation-delay: 0.51s; }
+.aska-group.is-visible .aska-blade:nth-child(6) { animation-delay: 0.6s; }
+.aska-group.is-visible .aska-blade:nth-child(7) { animation-delay: 0.69s; }
+.aska-group.is-visible .aska-blade:nth-child(8) { animation-delay: 0.78s; }
+@media (prefers-reduced-motion: reduce) {
+  .aska-group .aska-blade { opacity: 1; stroke-dashoffset: 0; animation: none; }
+}
+
+/* ── AMBIENT IDLE MOTION ──────────────────────────────────────────────────
+   Once the entrance animations finish, these keep the hero from going
+   completely still: a near-imperceptible drift on the signature motif, a
+   slow heartbeat on its center knot, and a breathing background glow. */
+
+@keyframes aska-drift {
+  0%, 100% { transform: rotate(-1deg) scale(1); }
+  50%      { transform: rotate(1deg) scale(1.015); }
+}
+.aska-idle {
+  animation: aska-drift 14s var(--ease-drift) infinite;
+  transform-origin: center;
+}
+
+@keyframes medallion-pulse {
+  0%, 100% { opacity: 0.85; r: 2.5; }
+  50%      { opacity: 1;    r: 3.4; }
+}
+.aska-medallion {
+  animation: medallion-pulse 3.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes glow-breathe {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.hero-glow {
+  animation: glow-breathe 8s ease-in-out infinite;
+}
+
+/* Inner dashes of the Aska Takwas flower flow outward along each blade's
+   spine — 2 5 is a 7-unit repeat, so -70 (10 repeats) loops seamlessly. */
+@keyframes aska-dash-flow {
+  to { stroke-dashoffset: -70; }
+}
+.aska-inner-dash {
+  animation: aska-dash-flow 3.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aska-idle, .aska-medallion, .hero-glow, .aska-inner-dash { animation: none; }
+}
+
+/* ── NAV LINKS ────────────────────────────────────────────────────────────
+   CSS-driven (not inline-style-driven) so :hover can actually take effect —
+   an inline style for the active/inactive color would otherwise always win
+   over a :hover rule regardless of specificity. */
+
+.nav-link {
+  color: var(--dim);
+  background: transparent;
+  transition: color 0.2s ease;
+}
+.nav-link:hover {
+  color: var(--ink);
+}
+.nav-link.active {
+  color: var(--brand);
+}
+.nav-link.active:hover {
+  filter: brightness(1.08);
+}
+
+.logo-mark {
+  transition: transform 0.4s var(--ease-spring);
+}
+/* The current mark (needle + brackets) only has left-right mirror symmetry,
+   not the previous diamond's 4-fold rotational symmetry — a 90° spin would
+   land the needle sideways. A small tilt reads as a deliberate flourish
+   without needing to resolve back to an identical silhouette. */
+.logo-group:hover .logo-mark {
+  transform: rotate(-8deg) scale(1.12);
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-group:hover .logo-mark { transform: none; }
+}
+
+/* ── LINK UNDERLINE ───────────────────────────────────────────────────────
+   Shared hover treatment for text links (nav, footer, inline copy links) —
+   an underline that grows in from the left rather than just appearing. */
+
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease-out);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* ── IMAGE ZOOM ───────────────────────────────────────────────────────────
+   Wrap a thumbnail in .img-zoom-frame (overflow-hidden) and give the <img>
+   .img-zoom — the image scales up slightly on card hover without the frame
+   clipping it awkwardly. */
+
+.img-zoom-frame { overflow: hidden; }
+.img-zoom {
+  transition: transform 0.5s var(--ease-out);
+}
+.img-zoom-frame:hover .img-zoom {
+  transform: scale(1.06);
+}
+
+/* ── SOCIAL / ICON HOVER ──────────────────────────────────────────────────── */
+
+.icon-hover {
+  transition: transform 0.25s var(--ease-spring), opacity 0.2s ease;
+  opacity: 0.75;
+}
+.icon-hover:hover {
+  transform: translateY(-3px) scale(1.08);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-hover:hover { transform: none; }
+  .img-zoom-frame:hover .img-zoom { transform: none; }
+}
+
+/* ── SAWAKI BACKGROUND PATTERN ───────────────────────────────────────────── */
+
+.sawaki-bg {
+  --sawaki-line: color-mix(in srgb, var(--brand) 14%, transparent);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--sawaki-line) 0,
+      var(--sawaki-line) 1px,
+      transparent 1px,
+      transparent 26px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--sawaki-line) 0,
+      var(--sawaki-line) 1px,
+      transparent 1px,
+      transparent 26px
+    );
+  background-size: 26px 26px;
+}
+
+/* ── RIGA LINE DIVIDER ────────────────────────────────────────────────────
+   A full-bleed horizontal seam placed between major page sections. The
+   RigaDivider knotwork sits fixed-size and centered; the plain line either
+   side of it is a flex-stretched edge that fills whatever width remains out
+   to the true edges of the viewport — used in place of ad-hoc
+   borderTop/borderBottom section boundaries. */
+
+.riga-line-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 28px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.riga-line-divider-edge {
+  flex: 1 1 auto;
+  height: 1px;
+  opacity: .5;
+}
+
+.riga-line-divider-knot {
+  flex: 0 0 auto;
+}
+
+/* ── RIGA UNDERLINE ───────────────────────────────────────────────────────
+   Hover accent for nav/footer links — a mini rendition of RigaDivider's
+   knotwork (two flanking lines + a small center knot) that spreads from
+   the middle outward on hover, instead of a plain underline growing from
+   one side. .riga-underline-trigger goes on the outer clickable element
+   (so hovering anywhere in a padded nav pill still fires it), but
+   .riga-underline-wrap goes on an INNER span that wraps just the label
+   text — sized to that text via inline-block — so the line always
+   matches the word width instead of the button's padded width. */
+
+.riga-underline-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 12px;
+  pointer-events: none;
+}
+.riga-underline-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transform: scaleX(0.35);
+  transform-origin: center;
+  transition: transform 0.4s var(--ease-out), opacity 0.25s ease;
+}
+.riga-underline-trigger:hover .riga-underline-svg,
+.riga-underline-trigger:focus-visible .riga-underline-svg,
+.riga-underline-trigger.active .riga-underline-svg {
+  opacity: 1;
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .riga-underline-svg { transition: none; }
+}
+
+/* ── FOOTER TEXTURE ───────────────────────────────────────────────────────
+   Fine dot-grid texture with a soft glow blooming up from the bottom
+   center — same idea as the reference screenshot's background treatment,
+   built from the theme's own tokens rather than its color. Uses its own
+   --footer-glow rather than the existing --brand-glow: alpha-blending a
+   mid-tone gold over the *dark* theme's navy card brightens it (a glow),
+   but blending that same tone over the *light* theme's already-light
+   cream card just darkens/muddies it — the light theme needs a genuinely
+   brighter tone to actually read as a glow, so the two diverge (see the
+   :root / .dark variable blocks above), where --brand-glow's other
+   existing uses (Hero.tsx's own glow, several drop-shadows) stay
+   untouched.  */
+
+.footer-texture {
+  position: relative;
+  overflow: hidden;
+}
+.footer-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 50% 100%, var(--footer-glow) 0%, transparent 70%),
+    radial-gradient(circle, color-mix(in srgb, var(--rim) 65%, transparent) 1px, transparent 1.5px);
+  background-size: 100% 100%, 16px 16px;
+  background-position: center bottom, 0 0;
+  background-repeat: no-repeat, repeat;
+}
+
+/* ── STITCH RULE ──────────────────────────────────────────────────────────
+   A running-stitch divider — the seam line between garment pieces —
+   used in place of a plain hairline between major sections. */
+
+.stitch-rule {
+  height: 1px;
+  border: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--rim) 0 6px,
+    transparent 6px 13px
+  );
+}
+
+/* ── SWATCH TAG ───────────────────────────────────────────────────────────
+   Eyebrow label shaped like a clipped fabric-swatch corner, replacing
+   generic pill badges. */
+
+.swatch-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px 6px 11px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand);
+  background: var(--brand-muted);
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
+}
+
+/* ── HERO ENTRANCE ANIMATIONS ────────────────────────────────────────────── */
+
+.hero-badge  { animation: fade-up 0.7s var(--ease-out) 0.1s both; }
+.hero-title  { animation: fade-up 0.8s var(--ease-out) 0.22s both; }
+.hero-sub    { animation: fade-up 0.8s var(--ease-out) 0.38s both; }
+.hero-ctas   { animation: fade-up 0.8s var(--ease-out) 0.52s both; }
+.hero-social { animation: fade-up 0.8s var(--ease-out) 0.64s both; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* ── PROSE (blog posts) ──────────────────────────────────────────────────── */
+
+.prose-devcraft {
+  max-width: 68ch;
+  /* The article shell is wider than the reading measure. Center the actual
+     prose column inside it, rather than leaving its narrower text measure
+     visually pinned to the left. */
+  margin-inline: auto;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--dim);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.prose-devcraft h1,
+.prose-devcraft h2,
+.prose-devcraft h3 {
+  font-family: var(--font-display), Georgia, serif;
+  color: var(--ink);
+  line-height: 1.2;
+  margin: 2rem 0 0.75rem;
+}
+
+.prose-devcraft h1 { font-size: 2rem; }
+.prose-devcraft h2 { font-size: 1.5rem; }
+.prose-devcraft h3 { font-size: 1.2rem; }
+
+.prose-devcraft p  { margin-bottom: 1.25rem; }
+
+.prose-devcraft code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875em;
+  background: var(--raised);
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: var(--brand);
+}
+
+.prose-devcraft pre {
+  background: #14192b;
+  color: #c9cfe8;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+.prose-devcraft pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* ── CODE SYNTAX HIGHLIGHTING ─────────────────────────────────────────────
+   rehype-highlight (see the blog [slug] page) already tags every token
+   with an .hljs-* class, language-aware — sql/ts/js/python/jsx/etc. all
+   come through as real, distinct token types. What was missing was any
+   actual color for those classes, so every code block rendered as flat,
+   uncolored text no matter the language. Scoped under .prose-devcraft pre
+   so it only touches blog code blocks; the palette is fixed (not
+   light/dark aware) to match the code background above, which is
+   likewise always dark regardless of site theme — the near-universal
+   convention for code blocks even on light pages. */
+
+.prose-devcraft pre .hljs-comment,
+.prose-devcraft pre .hljs-quote {
+  color: #6b7394;
+  font-style: italic;
+}
+.prose-devcraft pre .hljs-keyword,
+.prose-devcraft pre .hljs-selector-tag,
+.prose-devcraft pre .hljs-literal,
+.prose-devcraft pre .hljs-subst {
+  color: #d4ac55;
+}
+.prose-devcraft pre .hljs-string,
+.prose-devcraft pre .hljs-doctag {
+  color: #8bc98f;
+}
+.prose-devcraft pre .hljs-number,
+.prose-devcraft pre .hljs-regexp {
+  color: #e8a87c;
+}
+.prose-devcraft pre .hljs-title,
+.prose-devcraft pre .hljs-section,
+.prose-devcraft pre .hljs-selector-id,
+.prose-devcraft pre .hljs-title.function_ {
+  color: #8fa8e8;
+}
+.prose-devcraft pre .hljs-type,
+.prose-devcraft pre .hljs-built_in,
+.prose-devcraft pre .hljs-builtin-name,
+.prose-devcraft pre .hljs-title.class_ {
+  color: #5fc9c9;
+}
+.prose-devcraft pre .hljs-attr,
+.prose-devcraft pre .hljs-variable,
+.prose-devcraft pre .hljs-template-variable,
+.prose-devcraft pre .hljs-attribute,
+.prose-devcraft pre .hljs-params {
+  color: #c9a0dc;
+}
+.prose-devcraft pre .hljs-name,
+.prose-devcraft pre .hljs-tag {
+  color: #e888a3;
+}
+.prose-devcraft pre .hljs-symbol,
+.prose-devcraft pre .hljs-bullet,
+.prose-devcraft pre .hljs-link {
+  color: #e888a3;
+}
+.prose-devcraft pre .hljs-meta {
+  color: #8b93b8;
+}
+.prose-devcraft pre .hljs-deletion {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+}
+.prose-devcraft pre .hljs-addition {
+  color: #86efac;
+  background: rgba(52, 211, 153, 0.12);
+}
+.prose-devcraft pre .hljs-emphasis { font-style: italic; }
+.prose-devcraft pre .hljs-strong { font-weight: 700; }
+
+/* Homepage AI code samples stay legible in both site themes. The tokens are
+   intentionally scoped to the chat so blog rendering remains independent. */
+.ai-chat-message { overflow-wrap: anywhere; }
+.ai-markdown > :first-child { margin-top: 0; }
+.ai-markdown > :last-child { margin-bottom: 0; }
+.ai-markdown p { margin: 0.45rem 0; white-space: pre-wrap; }
+.ai-markdown h1, .ai-markdown h2, .ai-markdown h3 { margin: 0.65rem 0 0.35rem; color: var(--ink); font-weight: 700; line-height: 1.3; }
+.ai-markdown h1 { font-size: 1rem; }
+.ai-markdown h2 { font-size: 0.92rem; }
+.ai-markdown h3 { font-size: 0.86rem; }
+.ai-markdown ul, .ai-markdown ol { margin: 0.4rem 0; padding-left: 1.35rem; }
+.ai-markdown ul { list-style: disc; }
+.ai-markdown ol { list-style: decimal; }
+.ai-markdown li { margin: 0.18rem 0; }
+.ai-markdown blockquote { margin: 0.5rem 0; padding-left: 0.7rem; border-left: 2px solid var(--brand); color: var(--dim); }
+.ai-markdown a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+.ai-markdown code:not(pre code) { padding: 0.08rem 0.28rem; border-radius: 0.25rem; background: var(--raised); color: var(--brand); font-family: var(--font-mono), ui-monospace, monospace; font-size: 0.92em; }
+.ai-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.ai-markdown th, .ai-markdown td { padding: 0.3rem 0.45rem; border: 1px solid var(--rim); text-align: left; }
+.ai-markdown th { color: var(--ink); font-weight: 700; }
+.ai-code-block {
+  margin: 0.65rem -0.25rem 0.1rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, var(--rim));
+  border-radius: 0.7rem;
+  background: var(--code-surface, #171b2b);
+  color: var(--code-ink, #e7e9f5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.ai-code-language {
+  padding: 0.32rem 0.7rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+  color: var(--code-label, #b9c3ee);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ai-code-block pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.7rem;
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  line-height: 1.65;
+  white-space: pre;
+}
+.ai-code-token-comment { color: var(--code-comment, #8892b8); font-style: italic; }
+.ai-code-token-keyword { color: var(--code-keyword, #d7ae5a); }
+.ai-code-token-string { color: var(--code-string, #91ce99); }
+.ai-code-token-number { color: var(--code-number, #e9aa80); }
+.ai-code-token-property { color: var(--code-property, #9cb5ff); }
+
+:root {
+  --code-surface: #e4dcc7;
+  --code-ink: #25293a;
+  --code-label: #4c4d71;
+  --code-comment: #72778f;
+  --code-keyword: #9b591d;
+  --code-string: #397443;
+  --code-number: #a24f32;
+  --code-property: #465fa9;
+}
+.dark {
+  --code-surface: #171b2b;
+  --code-ink: #e7e9f5;
+  --code-label: #b9c3ee;
+  --code-comment: #8892b8;
+  --code-keyword: #d7ae5a;
+  --code-string: #91ce99;
+  --code-number: #e9aa80;
+  --code-property: #9cb5ff;
+}
+
+.prose-devcraft blockquote {
+  border-left: 3px solid var(--brand);
+  padding: 0.5rem 1.25rem;
+  margin: 1.5rem 0;
+  background: var(--card);
+  border-radius: 0 10px 10px 0;
+  font-style: italic;
+  color: var(--dim);
+}
+
+.prose-devcraft a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-devcraft ul,
+.prose-devcraft ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose-devcraft li { margin-bottom: 0.4rem; }
+
+.prose-devcraft img {
+  border-radius: 12px;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+/* Bug fix: remark-gfm enables markdown tables, but nothing styled them —
+   they rendered with the browser's bare default table look, and with no
+   overflow handling a wide table (many columns) would push past the
+   prose column and overflow the page on mobile. `display: block` +
+   `overflow-x: auto` directly on <table> is a well-established CSS-only
+   pattern for a responsive table with no extra wrapper markup needed —
+   it scrolls horizontally in place instead of squeezing or breaking out. */
+.prose-devcraft table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+.prose-devcraft th,
+.prose-devcraft td {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--rim);
+  text-align: left;
+}
+.prose-devcraft th {
+  background: var(--raised);
+  color: var(--ink);
+  font-weight: 600;
+}
+.prose-devcraft tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--raised) 40%, transparent);
+}
+
+/* ── DASHBOARD OVERRIDES ─────────────────────────────────────────────────── */
+
+.dashboard-layout * { cursor: default !important; }
+.dashboard-layout button,
+.dashboard-layout a { cursor: pointer !important; }
+
+/* ── DASHBOARD PREMIUM SURFACE ────────────────────────────────────────────
+   The dashboard reuses the public site's Desert Monarch tokens (same
+   --canvas/--card/--brand — it's one product, not a bolted-on admin
+   template) but at dense information density: tight padding stays tight,
+   the "premium" comes from material (elevation, a real accent, considered
+   borders) rather than added whitespace — airy spacing works against a
+   screen whose job is fast scanning (see spacing-density-dial). */
+
+.dash-shell {
+  --dash-line: color-mix(in srgb, var(--brand) 10%, transparent);
+  background-image:
+    repeating-linear-gradient(45deg, var(--dash-line) 0, var(--dash-line) 1px, transparent 1px, transparent 30px),
+    repeating-linear-gradient(-45deg, var(--dash-line) 0, var(--dash-line) 1px, transparent 1px, transparent 30px);
+  background-size: 30px 30px;
+  /* Ambient light blooms so the glass panels sitting on this shell have
+     real color/light to diffract instead of blurring flat nothing. Merged
+     directly into the shell (rather than requiring a separate className)
+     so every dashboard page gets it automatically. */
+  position: relative;
+  isolation: isolate;
+}
+.dash-shell::before, .dash-shell::after {
+  content: ""; position: fixed; z-index: -1; border-radius: 50%;
+  filter: blur(100px); pointer-events: none;
+}
+.dash-shell::before {
+  width: 520px; height: 520px; top: -160px; right: 8%; opacity: 0.28;
+  background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
+}
+.dash-shell::after {
+  width: 460px; height: 460px; bottom: -180px; left: 6%; opacity: 0.18;
+  background: radial-gradient(circle, var(--indigo) 0%, transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dash-shell::before { animation: ambientDrift 20s ease-in-out infinite alternate; }
+  .dash-shell::after  { animation: ambientDrift 26s ease-in-out infinite alternate-reverse; }
+}
+
+/* One primary metric can outrank its siblings in weight (component-variance)
+   — used on the dashboard overview instead of N identical equal-weight
+   stat tiles. Tinted gradient over the glass fill (not var(--card), which
+   would paint over the blur with a flat opaque color). */
+.dash-stat-hero {
+  background: linear-gradient(155deg, var(--brand-muted) 0%, var(--glass-bg-strong) 65%);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--glass-border));
+}
+
+.dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--ghost);
+}
+
+/* ── PROJECT CARD ICON BUTTONS (Live / GitHub / Case study) ───────────────
+   Icon-only glass buttons overlaid on the bottom edge of a project preview.
+   --proj-accent is set per card (brand for most, indigo for SaaS) by the
+   ProjectLinks wrapper. */
+.proj-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  color: var(--ink);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 6px 14px -8px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.25s var(--ease-out),
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.25s var(--ease-out);
+}
+.proj-icon-btn:hover {
+  transform: translateY(-2px);
+  color: var(--proj-accent, var(--brand));
+  border-color: var(--proj-accent, var(--brand));
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 10px 18px -8px rgba(0, 0, 0, 0.5);
+}
+.proj-icon-btn:active { transform: scale(0.93); transition-duration: 0.1s; }
+.proj-icon-btn--primary {
+  background: var(--proj-accent, var(--brand));
+  border-color: var(--proj-accent, var(--brand));
+  color: var(--on-brand);
+}
+.proj-icon-btn--primary:hover {
+  color: var(--on-brand);
+  filter: brightness(1.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .proj-icon-btn, .proj-icon-btn:hover, .proj-icon-btn:active { transform: none; }
+}
+
+/* ── SEGMENTED CONTROL (sliding pill) ────────────────────────────────────── */
+.segmented-control {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--raised);
+  border: 1px solid var(--rim);
+}
+.segmented-control-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  box-shadow: 0 2px 8px -2px var(--brand-glow);
+  transition: transform 0.4s var(--ease-spring), width 0.4s var(--ease-spring);
+  z-index: 0;
+}
+.segmented-control-option {
+  position: relative;
+  z-index: 1;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: transparent;
+  transition: color 0.25s var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .segmented-control-pill { transition: none; }
+}
+
+/* ── SKELETON LOADER (shimmer via transform, not background-position —
+   see the motion performance rule) ──────────────────────────────────────── */
+.skeleton-block {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--raised);
+}
+.skeleton-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 6%, transparent), transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-block::after { animation: skeleton-sweep 1.6s ease-in-out infinite; }
+}
+@keyframes skeleton-sweep {
+  100% { transform: translateX(100%); }
+}
+
+/* ── CONTACT FORM RESPONSIVE GRID ────────────────────────────────────────── */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+}
+@media (max-width: 860px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ── 3D ICON BADGES ───────────────────────────────────────────────────────── */
+@keyframes icon-idle-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.icon-badge {
+  display: inline-flex; border-radius: 12px; cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  transition: transform 0.25s var(--ease-out), filter 0.25s ease;
+  animation: icon-idle-float 3.5s ease-in-out infinite;
+}
+.icon-badge svg { display: block; }
+.icon-badge:hover {
+  animation-play-state: paused;
+  transform: translateY(-3px) scale(1.08) rotate(-3deg);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+}
+.icon-badge:active {
+  transform: translateY(-1px) scale(0.94) rotate(0deg);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+  transition-duration: 0.1s;
+}
+/* Bug fix: hovering the icon itself already paused its bounce AND snapped
+   to a defined transform (above) — but this card-hover path only paused
+   the animation, so the icon froze wherever the float keyframe's
+   translateY happened to be mid-cycle (anywhere from 0 to -2px) instead
+   of settling in one consistent spot. Explicitly resetting to
+   translateY(0) snaps it back to center every time, regardless of when
+   in its bounce cycle the hover happened to land. */
+.fill-trigger:hover .icon-badge,
+.fill-trigger:focus-visible .icon-badge {
+  animation-play-state: paused;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) { .icon-badge { animation: none; } }
+
+.icon-theme-glyph { transition: transform 0.4s var(--ease-spring); }
+button:hover .icon-theme-glyph { transform: rotate(25deg) scale(1.1); }
+button:active .icon-theme-glyph { transform: rotate(10deg) scale(0.92); transition-duration: 0.1s; }
+
+/* ── ICON GROW-TO-FILL ────────────────────────────────────────────────────
+   Wrap an icon in <IconFill scale={N}> (components/ui/IconFill.tsx) and it
+   grows to fill more of whatever box it sits in — either on its own hover,
+   or when an ancestor marked .fill-trigger (the card, row, or button the
+   icon lives inside) is hovered, so landing on the card is enough without
+   having to aim for the icon itself. `scale` is set per call site via the
+   --fill-scale custom property, since how much "filling" looks right
+   depends on how much empty space sits around that particular icon.
+   Deliberately untouched: the theme toggle (.icon-theme-glyph above) keeps
+   its own rotate-in-place hover. */
+.icon-fill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s var(--ease-spring);
+  transform: scale(1);
+}
+.icon-fill:hover,
+.fill-trigger:hover .icon-fill {
+  transform: scale(var(--fill-scale, 1.4));
+}
+.icon-fill:active,
+.fill-trigger:active .icon-fill {
+  transform: scale(calc(var(--fill-scale, 1.4) * 0.92));
+  transition-duration: 0.1s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-fill { transition: none; }
+  .icon-fill:hover, .fill-trigger:hover .icon-fill,
+  .icon-fill:active, .fill-trigger:active .icon-fill { transform: none; }
+}
+
+/* ── GENERAL INTERACTIVE LIFT ─────────────────────────────────────────────── */
+.interactive-lift {
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.interactive-lift:hover {
+  transform: translateY(-4px); box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.18); border-color: var(--brand);
+}
+.interactive-lift:active {
+  transform: translateY(-1px); box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.18); transition-duration: 0.1s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .interactive-lift, .icon-theme-glyph { transition: none; }
+  .interactive-lift:hover, .interactive-lift:active { transform: none; }
+}
+
+/* ── BENTO PANEL (shared: About, Skills) ─────────────────────────────────── */
+.bento-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid var(--glass-border);
+  padding: 28px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight);
+}
+.bento-panel-watermark {
+  position: absolute;
+  top: -6px;
+  right: 14px;
+  font-family: var(--font-bricolage), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 68px;
+  line-height: 1;
+  opacity: 0.09;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  z-index: 0;
+}
+@media (max-width: 480px) {
+  .bento-panel { padding: 22px; }
+  .bento-panel-watermark { font-size: 52px; }
+}
+/* .interactive-lift's own hover shadow (defined above) would otherwise
+   replace rather than combine with the glass inset highlight — this keeps
+   both since it shares .interactive-lift:hover's specificity but comes
+   later in the cascade. */
+.bento-panel.interactive-lift:hover, .interactive-lift.bento-panel:hover {
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), 0 6px 14px -8px rgba(0, 0, 0, 0.18);
+}
+
+/* ── JOURNEY — LEGEND + YEAR QUICK-NAV ───────────────────────────────────── */
+.journey-legend-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dim);
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--canvas) 70%, transparent);
+  border: 1px solid var(--rim-sub);
+}
+
+.journey-year-chip {
+  flex-shrink: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--rim);
+  background: var(--raised);
+  transition: transform 0.2s var(--ease-out), border-color 0.2s ease, background 0.2s ease;
+}
+.journey-year-chip:hover {
+  transform: translateY(-2px);
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 12%, var(--raised));
+}
+
+/* ── JOURNEY — STEPPED LEDGER ─────────────────────────────────────────────
+   A vertical spine with a colored dot per stop; cards alternate left/right
+   of the spine on wide screens and collapse to a single left-aligned column
+   on mobile — no canvas/viewBox scaling, so it never mis-renders at odd
+   widths the way a drawn SVG thread can. */
+
+.journey-spine-line {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 13px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--rim) 4%,
+    var(--rim) 96%,
+    transparent
+  );
+  z-index: 0;
+}
+@media (min-width: 860px) {
+  .journey-spine-line { left: 50%; transform: translateX(-1px); }
+}
+
+.journey-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+@media (min-width: 860px) {
+  .journey-row {
+    grid-template-columns: 1fr 28px 1fr;
+    gap: 28px;
+  }
+  .journey-row[data-side="left"] .journey-card-wrap { grid-column: 1; grid-row: 1; }
+  .journey-row[data-side="left"] .journey-row-spine { grid-column: 2; grid-row: 1; }
+  .journey-row[data-side="right"] .journey-row-spine { grid-column: 2; grid-row: 1; }
+  .journey-row[data-side="right"] .journey-card-wrap { grid-column: 3; grid-row: 1; }
+}
+
+.journey-row-spine {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 46px;
+}
+
+.journey-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 3px solid var(--canvas);
+  box-shadow: 0 0 0 1px var(--rim);
+  flex-shrink: 0;
+}
+
+.journey-card-wrap { min-width: 0; }
+
+.journey-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--rim);
+  padding: 22px 24px;
+}
+
+.journey-card-watermark {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 52px;
+  line-height: 1;
+  opacity: 0.1;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  z-index: 0;
+}
+@media (max-width: 480px) {
+  .journey-card { padding: 18px 20px; }
+  .journey-card-watermark { font-size: 40px; }
+}
