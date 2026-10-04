@@ -15,6 +15,7 @@ import type {
 } from "@devcraft/types";
 
 const BASE: string = process.env.NEXT_PUBLIC_API_URL!;
+const AUTH_PROXY = "/api";
 
 // ── AUTH TOKEN (sessionStorage cache over httpOnly refresh cookie) ────────────
 
@@ -78,9 +79,15 @@ async function apiFetch<T>(
   const tok: string | null = getToken();
   if (tok) headers["Authorization"] = `Bearer ${tok}`;
 
+  // Auth must stay same-origin so the refresh cookie belongs to the web host
+  // and is visible to proxy.ts. Other API calls continue to use the API URL.
+  const requestUrl = path.startsWith("/auth/")
+    ? `${AUTH_PROXY}${path}`
+    : `${BASE}${path}`;
+
   let res: Response;
   try {
-    res = await fetch(`${BASE}${path}`, {
+    res = await fetch(requestUrl, {
       ...init,
       headers,
       credentials: "include",
@@ -97,7 +104,7 @@ async function apiFetch<T>(
   if (res.status === 401 && path !== "/auth/login" && path !== "/auth/refresh") {
     let refreshed: Response;
     try {
-      refreshed = await fetch(`${BASE}/auth/refresh`, { method: "POST", credentials: "include" });
+      refreshed = await fetch(`${AUTH_PROXY}/auth/refresh`, { method: "POST", credentials: "include" });
     } catch {
       setToken(null);
       return { ok: false, error: "Session expired. Please log in again.", statusCode: 401 };
@@ -116,7 +123,7 @@ async function apiFetch<T>(
         setToken(data.data.accessToken);
         headers["Authorization"] = `Bearer ${data.data.accessToken}`;
         try {
-          const retry: Response = await fetch(`${BASE}${path}`, { ...init, headers, credentials: "include" });
+          const retry: Response = await fetch(requestUrl, { ...init, headers, credentials: "include" });
           return (await retry.json()) as ApiResponse<T>;
         } catch (err: unknown) {
           const message: string = err instanceof Error ? err.message : "Network request failed";
