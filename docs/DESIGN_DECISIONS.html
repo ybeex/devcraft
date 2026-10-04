@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DevCraft — UI &amp; System Design Decisions</title>
+<style>
+:root{--canvas:#fdfbfa;--card:#f5eee6;--raised:#ebdccb;--rim:#dec5ad;--rim-sub:#eeddc8;--brand:#b27343;--indigo:#1a3f6f;--ink:#221e17;--dim:#6b5647;--ghost:#b19785;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--canvas);color:var(--ink);line-height:1.7;font-size:14px}
+.cover{padding:60px clamp(24px,8vw,120px) 44px;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(178,115,67,.15),transparent 65%),var(--canvas);}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
+.cover h1{font-family:Georgia,serif;font-size:clamp(30px,5vw,48px);font-weight:700;letter-spacing:-1px;line-height:1.12;margin-bottom:12px}
+.cover p{color:var(--dim);font-size:15px;max-width:680px}
+.container{max-width:980px;margin:0 auto;padding:0 clamp(24px,6vw,80px) 70px}
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:26px 0 6px}
+.toc a{padding:10px 13px;border-radius:10px;border:1px solid var(--rim);background:var(--card);font-size:12px;font-weight:600;color:var(--ink);text-decoration:none;display:block}
+h2{font-family:Georgia,serif;font-size:25px;font-weight:700;margin:52px 0 8px;padding-top:44px;border-top:1px solid var(--rim)}
+h2:first-of-type{border:none;padding-top:0;margin-top:0}
+.h2-sub{color:var(--dim);font-size:13.5px;max-width:680px;margin-bottom:24px}
+h3{font-size:15.5px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:12px}
+.dim{color:var(--dim)}
+code{font-family:monospace;font-size:12.3px;background:var(--raised);padding:1px 6px;border-radius:5px;color:var(--brand)}
+pre{background:#1c1712;color:#e8dccc;border-radius:12px;padding:16px 18px;font-family:'SF Mono',Consolas,monospace;font-size:12px;line-height:1.65;overflow-x:auto;margin:12px 0;border:1px solid var(--rim)}
+.decision{border:1px solid var(--rim);border-radius:16px;padding:22px 24px;background:var(--card);margin:18px 0}
+.decision-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.decision h4{font-size:15px;font-weight:700}
+.decision .verdict{font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--brand);color:#fff;white-space:nowrap}
+.decision .rationale{font-size:13px;color:var(--dim);margin-bottom:10px}
+.tradeoffs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:640px){.tradeoffs{grid-template-columns:1fr}}
+.tf-block{border-radius:10px;padding:12px 14px;font-size:12.3px}
+.tf-block.chose{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.25)}
+.tf-block.rejected{background:rgba(178,115,67,.06);border:1px solid var(--rim)}
+.tf-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;display:block}
+.tf-block.chose .tf-label{color:#059669}
+.tf-block.rejected .tf-label{color:var(--ghost)}
+
+.edge-case{border-left:3px solid var(--indigo);background:var(--card);border-radius:0 12px 12px 0;padding:14px 18px;margin:14px 0}
+.edge-case .ec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--indigo);margin-bottom:6px}
+.edge-case p{font-size:13px;color:var(--dim);margin-bottom:8px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0}
+th{text-align:left;padding:8px 11px;background:var(--raised);border-bottom:1px solid var(--rim);font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+td{padding:8px 11px;border-bottom:1px solid var(--rim-sub)}
+tr:last-child td{border:none}
+footer{padding:36px clamp(24px,6vw,80px);border-top:1px solid var(--rim);background:var(--card);font-size:11.5px;color:var(--ghost);text-align:center}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="eyebrow">DevCraft Portfolio · Reference Document</div>
+  <h1>UI &amp; System Design Decisions</h1>
+  <p>Why the product is built the way it is — architecture choices with their real trade-offs, plus the edge cases that shaped the final implementation. Written for anyone (including a future version of the person who built this) picking the codebase back up and needing to know <em>why</em>, not just <em>what</em>.</p>
+  <div class="toc">
+    <a href="#visual">Visual Design System</a>
+    <a href="#arch">Architecture Decisions</a>
+    <a href="#ai-arch">AI Layer Design</a>
+    <a href="#edge">Edge Cases</a>
+    <a href="#state">State Management Patterns</a>
+  </div>
+</div>
+
+<div class="container">
+
+<h2 id="visual">1. Visual Design System</h2>
+<p class="h2-sub">The design isn't a generic dark-mode-toggle template with a color swap. Every choice traces back to one of the three professional identities behind the product.</p>
+
+<div class="decision">
+  <div class="decision-head"><h4>Desert Monarch palette — why warm clay + indigo, not a typical developer-portfolio blue/purple</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Clay (<code>#b27343</code>) references the mud-and-lime architecture of Kano's old city — the same material used in the walls, arches, and Zankwaye plasterwork the SVG component library is drawn from. Indigo (<code>#1a3f6f</code>) references the Kofar Mata dye pits, a specific, real, 500-year-old dye works in Kano — not a generic "African" color association. Indigo is deliberately <em>reserved</em>, used only for the SaaS era of the projects section and for data-visualization accents, so it reads as a distinct signal ("this is live, this is current") rather than being diluted across the whole UI.</p>
+  <div class="tradeoffs">
+    <div class="tf-block chose"><span class="tf-label">Chose</span>Two-color system with strict semantic reservation (clay = brand default, indigo = "current/live" signal only)</div>
+    <div class="tf-block rejected"><span class="tf-label">Rejected</span>A single accent color used everywhere — simpler, but loses the ability to signal "this project is different from the others" at a glance</div>
+  </div>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>Hausa components as functional UI, not decoration</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Every one of the 8 SVG components has a real job. This was a deliberate constraint set at the start: if a motif can't be justified as solving an actual UI problem (loading state, active-nav indicator, section divider, avatar frame), it doesn't ship. This is the tailoring identity showing up directly — a tailor doesn't add a design element that doesn't serve fit or function.</p>
+  <table>
+    <thead><tr><th>Component</th><th>UI job it does</th><th>Why not just use a generic equivalent</th></tr></thead>
+    <tbody>
+      <tr><td><code>LaujeSpinner</code></td><td>Loading indicator</td><td>A generic spinner communicates nothing; this one is recognizable as this product's specific loading state, and rotates like the parasol it's drawn from</td></tr>
+      <tr><td><code>TukulMarker</code></td><td>Active nav-link indicator</td><td>A tiny functional dot that also reads as intentional rather than an afterthought</td></tr>
+      <tr><td><code>KwalbaFrame</code></td><td>Avatar / testimonial photo frame</td><td>A calabash cross-section is a genuinely good circular-frame shape — chosen because it works, not despite being unusual</td></tr>
+      <tr><td><code>RigaDivider</code></td><td>Section divider between project eras</td><td>A plain <code>&lt;hr&gt;</code> says nothing about a transition in the narrative; the embroidery-pattern divider marks it as a meaningful boundary</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>Typography stack — four fonts, not one</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Playfair Display (headings) carries the "crafted, considered" register. DM Sans (body) is chosen specifically for its geometric-but-warm letterforms — legible at small sizes without feeling clinical. Bricolage Grotesque is reserved <em>only</em> for numeral-heavy contexts (stat cards, dashboard metrics) because its numeral design is more distinct at a glance than DM Sans's. JetBrains Mono appears only in genuinely technical contexts (the terminal easter egg, code snippets, tech-stack chips) — using a monospace font outside those contexts would undercut the signal that "this is code" when it actually appears.</p>
+</div>
+
+<h2 id="arch">2. Architecture Decisions</h2>
+<p class="h2-sub">Every major structural choice, with what was rejected and why.</p>
+
+<div class="decision">
+  <div class="decision-head"><h4>Separate Fastify API vs. Next.js API routes / Server Actions</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Next.js can absolutely host an API within the same app. A standalone Fastify service was chosen instead for two concrete reasons: (1) the API needed to be independently deployable and scalable from the frontend — Vercel's serverless model isn't ideal for long-lived SSE streams (the AI chat endpoint holds a connection open for the duration of a streamed response), while Railway's persistent-process model handles that naturally; (2) keeping a hard boundary between "public frontend" and "backend with database credentials" is a security posture worth the extra deployment complexity, not just a style preference.</p>
+  <div class="tradeoffs">
+    <div class="tf-block chose"><span class="tf-label">Chose</span>Standalone Fastify API, deployed separately, communicating over REST + SSE</div>
+    <div class="tf-block rejected"><span class="tf-label">Rejected</span>Next.js Route Handlers / Server Actions — simpler single-deploy story, but couples frontend and backend scaling, and SSE inside serverless functions is fragile</div>
+  </div>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>pnpm workspaces + Turborepo vs. two separate repos</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">A shared <code>@devcraft/types</code> package gives both the API and the frontend one source of truth for every response shape (<code>ApiResponse&lt;T&gt;</code>, <code>Project</code>, <code>AnalyticsOverview</code>, etc.) — a field rename in the database layer becomes a compile error in the frontend immediately, rather than a silent runtime mismatch discovered in production. That guarantee is worth the added monorepo tooling complexity (see the build-pipeline issues documented in <code>BUGS_AND_SECURITY_REPORT.html</code>, build 0.7.0 — this complexity is real and did bite once).</p>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>Vanilla Three.js vs. React Three Fiber for the hero</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">The hero background is a single, self-contained, imperative animation loop with no need to participate in React's render cycle beyond mount/unmount. React Three Fiber's declarative scene graph is genuinely valuable when 3D content needs to react to component state or compose with other React components — neither applies here. Vanilla Three.js inside one <code>useEffect</code>, loaded via <code>next/dynamic(() =&gt; import(...), { ssr: false })</code>, keeps the bundle smaller (no R3F/drei dependency) and the code simpler for a single, isolated visual.</p>
+  <pre>// components/portfolio/Hero.tsx
+const HeroThreeJS = dynamic(() =&gt; import("./HeroThreeJS"), {
+  ssr: false,
+  loading: () =&gt; &lt;div className="absolute inset-0 sawaki-bg opacity-60" /&gt;,
+});
+// CSS fallback renders instantly; WebGL canvas swaps in once the
+// bundle loads — no blank flash, no SSR/hydration mismatch risk</pre>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>D3 for computation, React for the DOM — never D3 for DOM manipulation</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">D3 and React both want to own the DOM, and letting D3 mutate elements React also renders is a well-known source of bugs (React's virtual DOM diff and D3's imperative <code>.attr()</code> calls fight each other). The pattern used throughout <code>D3Charts.tsx</code>: D3 computes scales, paths, and layout math; the actual SVG elements are still written by D3's <code>selection.append()</code> calls into a ref'd container, but that container is fully owned by the effect and never touched by React's render output afterward — React only renders the wrapping <code>&lt;svg ref={svgRef}&gt;</code> once, and D3 populates it imperatively inside <code>useEffect</code>, tearing down and rebuilding on every relevant dependency change.</p>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>MDX blog storage — database column, not filesystem</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">A common Next.js blog pattern stores MDX as files in the repo, rebuilt at deploy time. That's incompatible with an admin dashboard that publishes posts at runtime without a redeploy. <code>BlogPost.content</code> is a plain <code>String</code> column holding raw MDX text, rendered at request time via <code>next-mdx-remote/rsc</code>. The trade-off is losing filesystem-based version history for posts (mitigated by the admin UI being the only write path, with `updatedAt` tracked) in exchange for instant publish with zero deploy.</p>
+</div>
+
+<h2 id="ai-arch">3. AI Layer Design</h2>
+
+<div class="decision">
+  <div class="decision-head"><h4>One shared OpenRouter service vs. per-feature API clients</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">All five AI-powered features share one <code>openrouter.service.ts</code> — one model registry, one SSE helper, one client instance. The alternative (each feature managing its own OpenAI-SDK-compatible client) would duplicate the token-ceiling logic, the model-registry typing, and the streaming boilerplate five times, and would make a future provider swap five times the work.</p>
+  <pre>export const MODELS = {
+  "openai/gpt-4o-mini": { maxTokens: undefined, ... },
+  "deepseek/deepseek-r1-0528": { maxTokens: 10000, ... },
+  // ...7 total
+} satisfies Record&lt;string, ModelConfig&gt;;
+
+// `satisfies` (not `: Record&lt;string, ModelConfig&gt;`) is deliberate:
+// it validates every entry against ModelConfig while keeping each
+// object key as its own literal string, so `keyof typeof MODELS`
+// stays a 7-member union instead of widening to plain `string`.
+export type ModelId = keyof typeof MODELS;</pre>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>Server-Sent Events vs. WebSockets for streaming</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Every streaming AI response is one-directional (server → client) and short-lived (seconds to tens of seconds). SSE is purpose-built for exactly that and needs no extra client library, no connection-upgrade handshake complexity, and degrades to a normal HTTP request/response in dev tools for easy debugging. WebSockets would be the right call if the product needed bidirectional real-time features (live collaboration, presence) — it doesn't.</p>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>Prompt-injection defense — pattern matching, not a second model call</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">A more thorough defense would run every user message through a separate classifier model before it reaches the main chat model. That doubles latency and cost on every message for a public, unauthenticated endpoint. The chosen approach — regex pattern matching against known injection phrasings, plus a trailing system-message reminder appended after the user's turns — is a pragmatic middle ground: it catches the common, unsophisticated attempts (which is the realistic threat model for a portfolio chat widget, not a high-value target) without adding a second model round-trip to every request.</p>
+</div>
+
+<h2 id="edge">4. Edge Cases</h2>
+<p class="h2-sub">Specific failure modes the implementation handles explicitly, and how.</p>
+
+<div class="edge-case">
+  <div class="ec-label">Embedded project demo — target site blocks iframe embedding</div>
+  <p>A live project set as a SaaS-era demo might send <code>X-Frame-Options: DENY</code>, which fails silently from JavaScript's perspective — there's no <code>onerror</code> event for this. The iframe's <code>load</code> event actually fires even when the content is blocked (some browsers show a blank frame, others show a native "refused to connect" page inside the frame), so a same-origin content check can't reliably detect the block either.</p>
+  <pre>const launch = () =&gt; {
+  setState("loading");
+  // If onLoad hasn't resolved state within 8s, assume the
+  // target is blocking embedding rather than being slow —
+  // a real page load, even a slow one, fires onLoad well
+  // before this; this is a heuristic, not a certainty
+  timeoutRef.current = setTimeout(() =&gt; {
+    setState(s =&gt; s === "loading" ? "blocked" : s);
+  }, 8000);
+};</pre>
+  <p>The "blocked" state shows a screenshot fallback with a direct "open in new tab" link, rather than leaving a permanently-spinning loader.</p>
+</div>
+
+<div class="edge-case">
+  <div class="ec-label">Scroll reveal — elements added to the DOM after initial mount</div>
+  <p>Project cards and blog list items render from an async data fetch; by the time that data arrives, the initial <code>IntersectionObserver.observe()</code> pass has already run and missed them entirely.</p>
+  <pre>const observe = () =&gt; {
+  document.querySelectorAll(".reveal:not([data-rv])")
+    .forEach(el =&gt; { io.observe(el); el.dataset.rv = "1"; });
+};
+observe(); // initial pass
+
+const mo = new MutationObserver(() =&gt; observe());
+mo.observe(document.body, { childList: true, subtree: true });
+// re-scans on every DOM mutation, but the [data-rv] marker
+// means already-observed elements are skipped — O(new elements)
+// per mutation, not O(all elements)</pre>
+</div>
+
+<div class="edge-case">
+  <div class="ec-label">Contact form — bot submissions vs. legitimate fast typers</div>
+  <p>A honeypot field (a form input hidden from sighted users via CSS, that legitimate users therefore never fill in) is the chosen defense over a time-based "too fast to be human" check, specifically because time-based checks produce false positives against password managers and browser autofill, which fill a form in milliseconds — exactly the pattern a naive bot-detector would flag.</p>
+  <pre>&lt;input
+  type="text" name="website" value={form.website}
+  onChange={change("website")} autoComplete="off" tabIndex={-1}
+  aria-hidden="true"
+  style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+/&gt;
+// Real users never see or fill this. Simple scraping bots that
+// fill every input on a page will. Server-side: if (website) →
+// respond 201 as if successful (don't reveal the check exists),
+// but skip the database write and the email.</pre>
+</div>
+
+<div class="edge-case">
+  <div class="ec-label">JWT refresh — 401 mid-request vs. 401 on page load</div>
+  <p>Two different situations both produce a 401 from the API, and conflating them causes bugs: (1) the admin's access token expired naturally during an active session — should silently refresh and retry; (2) the admin was never logged in / the refresh cookie itself is invalid — retrying forever would loop.</p>
+  <pre>if (res.status === 401 &amp;&amp; path !== "/auth/login") {
+  const refreshed = await fetch(`${BASE}/auth/refresh`, {...});
+  if (refreshed.ok) {
+    // case 1: rotate token, retry original request once
+    setToken(data.data.accessToken);
+    return (await fetch(`${BASE}${path}`, {...})).json();
+  } else {
+    // case 2: refresh cookie itself is gone/invalid — give up,
+    // clear cached token, let the caller's UI redirect to login
+    setToken(null);
+  }
+}</pre>
+</div>
+
+<div class="edge-case">
+  <div class="ec-label">Dark mode toggle — D3 charts already painted before the toggle fires</div>
+  <p>CSS custom properties resolve to different hex values under <code>.dark</code>, but SVG elements D3 already drew have those resolved values baked into their <code>fill</code>/<code>stroke</code> attributes as static strings — they don't "listen" to CSS variable changes the way an element styled purely via CSS would.</p>
+  <pre>function useDarkMode(): boolean {
+  const [dark, setDark] = useState(false);
+  useEffect(() =&gt; {
+    const check = () =&gt; setDark(document.documentElement.classList.contains("dark"));
+    check();
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () =&gt; mo.disconnect();
+  }, []);
+  return dark;
+}
+// every chart: const dark = useDarkMode();  useEffect(() =&gt; {...}, [data, dark]);
+// `dark` doesn't need to be read inside the effect — its only job
+// is forcing the effect to re-run (and thus re-read getCSSVar())
+// when the class changes</pre>
+</div>
+
+<div class="edge-case">
+  <div class="ec-label">Highlight-to-share — selection spans multiple DOM nodes, or falls outside the article</div>
+  <p>The <code>Selection</code> API's <code>getRangeAt(0)</code> can return a range whose <code>commonAncestorContainer</code> is outside the blog content wrapper entirely (e.g., the user drags a selection from the article into the sidebar). Rendering a highlight card for that would be nonsensical.</p>
+  <pre>const range = sel.getRangeAt(0);
+if (!contentRef.current.contains(range.commonAncestorContainer)) {
+  setSelection(null); // silently ignore — no popup, no error
+  return;
+}
+// length bounds also enforced: 20–600 characters. Below 20,
+// the quote card would look absurd; above 600, it would be
+// truncated so aggressively the "share" feature loses its point</pre>
+</div>
+
+<div class="edge-case">
+  <div class="ec-label">Analytics referrer field — used as free-form input from the browser's <code>document.referrer</code></div>
+  <p>This value originates from the visitor's browser and is fully attacker-controllable (a crafted link, a malicious redirect chain) before it ever reaches the API. It's stored, and later rendered in the admin dashboard — a stored-XSS path if not handled carefully, even though React escapes by default (defense in depth, not reliance on a single layer).</p>
+  <pre>function sanitizeReferrer(referrer?: string): string | null {
+  if (!referrer) return null;
+  try {
+    const u = new URL(referrer); // throws on anything not a real URL
+    return (u.protocol === "http:" || u.protocol === "https:")
+      ? referrer.slice(0, 500) : null;
+  } catch { return null; } // malformed input discarded, not stored
+}</pre>
+</div>
+
+<h2 id="state">5. State Management Patterns</h2>
+
+<div class="decision">
+  <div class="decision-head"><h4>No global state library</h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Neither Redux/Zustand nor React Context-as-global-store is used anywhere in this codebase. The admin access token lives in a module-level variable backed by <code>sessionStorage</code> (see <code>lib/api.ts</code>); every other piece of state is either server data fetched per-page (React Server Components, no client cache needed) or genuinely local component state. The product's actual state-sharing needs turned out to be small enough that a global store would have added indirection without solving a real problem — this was verified, not assumed, by noticing every attempted "shared state" need (theme, auth token) had a simpler dedicated solution.</p>
+</div>
+
+<div class="decision">
+  <div class="decision-head"><h4>Form state — typed generic setter, not <code>(form as any)[key]</code></h4><span class="verdict">Shipped</span></div>
+  <p class="rationale">Both dashboard CRUD forms (projects, blog) originally used an untyped index-signature pattern to update arbitrary fields, which silently defeated the type checker on every field write. Replaced with a generic helper that keeps full type safety:</p>
+  <pre>const setField = &lt;K extends keyof ProjectFormState&gt;(
+  key: K, val: ProjectFormState[K]
+): void =&gt; {
+  setForm(prev =&gt; ({ ...prev, [key]: val }));
+};
+// call site: setField("published", true) — `val`'s type is
+// inferred/checked against exactly that field's declared type,
+// not `any`</pre>
+</div>
+
+</div>
+<footer>DevCraft Portfolio — UI &amp; System Design Decisions · Living document, updated alongside the codebase</footer>
+</body>
+</html>
