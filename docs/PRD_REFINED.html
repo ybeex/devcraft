@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DevCraft Portfolio — Product Requirements Document (Refined)</title>
+<style>
+:root{--canvas:#fdfbfa;--card:#f5eee6;--raised:#ebdccb;--rim:#dec5ad;--rim-sub:#eeddc8;--brand:#b27343;--indigo:#1a3f6f;--ink:#221e17;--dim:#6b5647;--ghost:#b19785;--green:#059669;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--canvas);color:var(--ink);line-height:1.7;font-size:14px}
+.cover{padding:64px clamp(24px,8vw,120px) 48px;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(178,115,67,.15),transparent 65%),var(--canvas);}
+.cover .eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
+.cover h1{font-family:Georgia,serif;font-size:clamp(32px,5.5vw,54px);font-weight:700;letter-spacing:-1.2px;line-height:1.1;margin-bottom:14px}
+.cover p{color:var(--dim);font-size:16px;max-width:640px;margin-bottom:20px}
+.meta-row{display:flex;gap:28px;flex-wrap:wrap;font-size:12px}
+.meta-row div span{display:block;color:var(--ghost);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.meta-row div strong{color:var(--ink);font-weight:700}
+.container{max-width:960px;margin:0 auto;padding:0 clamp(24px,6vw,80px) 70px}
+h2{font-family:Georgia,serif;font-size:25px;font-weight:700;margin:48px 0 16px;padding-top:40px;border-top:1px solid var(--rim)}
+h3{font-size:15px;font-weight:700;margin:22px 0 8px}
+p{margin-bottom:12px;color:var(--ink)}
+p.lede{color:var(--dim)}
+ul,ol{margin:8px 0 14px 22px}
+li{margin-bottom:6px;color:var(--dim)}
+strong{color:var(--ink)}
+code{font-family:monospace;font-size:12.5px;background:var(--raised);padding:1px 6px;border-radius:5px;color:var(--brand)}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:14px 0}
+th{text-align:left;padding:9px 12px;background:var(--raised);border-bottom:1px solid var(--rim);font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+td{padding:9px 12px;border-bottom:1px solid var(--rim-sub);vertical-align:top}
+tr:last-child td{border:none}
+.chip{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:100px}
+.chip-p0{background:rgba(220,38,38,.1);color:#dc2626}
+.chip-p1{background:rgba(178,115,67,.12);color:var(--brand)}
+.chip-p2{background:rgba(26,63,111,.1);color:var(--indigo)}
+.chip-done{background:rgba(5,150,105,.1);color:var(--green)}
+.chip-new{background:var(--indigo);color:#fff}
+.card{border:1px solid var(--rim);border-radius:14px;padding:20px 22px;background:var(--card);margin:14px 0}
+.card h4{font-size:13.5px;font-weight:700;margin-bottom:6px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.summary-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:24px 0}
+.stat{border:1px solid var(--rim);border-radius:14px;padding:16px;background:var(--card)}
+.stat .n{font-size:26px;font-weight:800;color:var(--brand)}
+.stat .l{font-size:11px;color:var(--dim)}
+footer{padding:36px clamp(24px,6vw,80px);border-top:1px solid var(--rim);background:var(--card);font-size:11.5px;color:var(--ghost);text-align:center}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="eyebrow">Product Requirements Document · Refined</div>
+  <h1>DevCraft Portfolio</h1>
+  <p class="lede">A full-product developer portfolio — public-facing showcase, admin backend, and AI layer — built to demonstrate engineering depth as much as the work it displays. This refined edition documents the product as actually shipped, superseding the original v1/v2 drafts written before implementation began.</p>
+  <div class="meta-row">
+    <div><span>Status</span><strong>21 / 21 features shipped</strong></div>
+    <div><span>Current build</span><strong>v0.7.0</strong></div>
+    <div><span>Owner</span><strong>Solo — design, build, ship</strong></div>
+    <div><span>Stack</span><strong>Next.js 14 · Fastify · PostgreSQL</strong></div>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="summary-strip">
+  <div class="stat"><div class="n">21</div><div class="l">Functional requirements — all complete</div></div>
+  <div class="stat"><div class="n">7</div><div class="l">AI models integrated</div></div>
+  <div class="stat"><div class="n">8</div><div class="l">Hausa cultural components</div></div>
+  <div class="stat"><div class="n">7</div><div class="l">Prisma models</div></div>
+  <div class="stat"><div class="n">79+</div><div class="l">Source files</div></div>
+</div>
+
+<h2 style="border:none;padding-top:0;margin-top:0">1. Problem &amp; Positioning</h2>
+<p>A developer portfolio's actual job is to answer one question fast: <em>can this person build production-quality software?</em> Most portfolios answer it badly — a static grid of GitHub links with no narrative, no depth, and no proof of judgment under real constraints.</p>
+<p>This product answers it directly. The portfolio itself <strong>is</strong> the proof: a working monorepo with a real auth system, a real database, a real AI layer with cost controls and injection defenses, and a design system that reflects a specific cultural identity rather than a generic template. A hiring engineer who opens the dashboard, tries the AI chat, or reads the case studies is evaluating the candidate's actual engineering — not a claim about it.</p>
+<p>The subject is a self-taught full-stack engineer from Kano, northern Nigeria — a mathematics graduate and former professional tailor. Those three backgrounds aren't biographical trivia; they're load-bearing in the product's design decisions (see §7, Design Rationale).</p>
+
+<h2>2. Goals</h2>
+<div class="two-col">
+  <div class="card">
+    <h4>Primary</h4>
+    <ul>
+      <li>Convert a hiring manager or client's first 90 seconds on the site into genuine interest</li>
+      <li>Demonstrate full-stack depth: auth, data modeling, API design, AI integration, security hardening</li>
+      <li>Make the cultural identity (Hausa design language) a structural part of the product, not a skin</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Secondary</h4>
+    <ul>
+      <li>Own the content pipeline (blog, projects) via a real admin dashboard — no CMS dependency</li>
+      <li>Build a subscriber base for future launches with zero-friction opt-in</li>
+      <li>Keep hosting cost near-zero at low traffic (Vercel + Railway + Neon free tiers)</li>
+    </ul>
+  </div>
+</div>
+
+<h2>3. Non-Goals</h2>
+<ul>
+  <li>Multi-tenant / multi-user portfolio platform — this is a single-owner product, not a SaaS others sign up for</li>
+  <li>A full CMS with rich media pipeline — the blog editor is intentionally simple (MDX textarea + AI assist), not a WYSIWYG</li>
+  <li>Real-time collaboration on blog drafts — single-admin, no concurrent-editing conflict resolution needed</li>
+  <li>Native mobile app — the web experience is responsive-first and sufficient</li>
+</ul>
+
+<h2>4. Functional Requirements — Final Status</h2>
+<p class="lede">All 21 requirements are complete. Three (FR-019–021) were deferred to a P2/backlog bucket after the first hardening pass and promoted back into scope and shipped in build 0.5.0 — noted below.</p>
+
+<table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Priority</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>FR-001</code></td><td>Hero section — identity, availability badge, primary CTAs</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-002</code></td><td>Interactive hero background reflecting Hausa geometric pattern (Sawaki)</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped — Three.js particle field</span></td></tr>
+<tr><td><code>FR-003</code></td><td>Cultural component library — minimum 6 original SVG motifs</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped — 8 delivered</span></td></tr>
+<tr><td><code>FR-004</code></td><td>Projects section organized by career era, with visual era transitions</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-005</code></td><td>Scroll-triggered reveal animations, bidirectional (in on scroll down, in on scroll up)</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-006</code></td><td>REST API backed by a real relational database</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped — Fastify + PostgreSQL</span></td></tr>
+<tr><td><code>FR-007</code></td><td>Authenticated admin dashboard with full content CRUD</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-008</code></td><td>Email capture with zero-friction opt-in (no confirmation step)</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-009</code></td><td>Cohesive design system, light + dark mode</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped — Desert Monarch</span></td></tr>
+<tr><td><code>FR-010</code></td><td>One-click CV download</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-011</code></td><td>Fully responsive, mobile-first</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-012</code></td><td>Branded loading state (Lauje spinner motif)</td><td><span class="chip chip-p0">P0</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-013</code></td><td>Blog system — MDX content, tags, related posts</td><td><span class="chip chip-p1">P1</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-014</code></td><td>Analytics dashboard — traffic, device split, referrers</td><td><span class="chip chip-p1">P1</span></td><td><span class="chip chip-done">Shipped — D3.js</span></td></tr>
+<tr><td><code>FR-015</code></td><td>Subscriber notification blast + send history</td><td><span class="chip chip-p1">P1</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-016</code></td><td>Hidden CLI / terminal easter egg</td><td><span class="chip chip-p1">P1</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-017</code></td><td>Magnetic hover interaction on primary CTAs</td><td><span class="chip chip-p1">P1</span></td><td><span class="chip chip-done">Shipped</span></td></tr>
+<tr><td><code>FR-018</code></td><td>Testimonials with third-party verification links</td><td><span class="chip chip-p2">P2</span></td><td><span class="chip chip-done">Shipped (0.5.0)</span></td></tr>
+<tr><td><code>FR-019</code></td><td>Interactive geographic/journey visualization</td><td><span class="chip chip-p2">P2</span></td><td><span class="chip chip-done">Shipped (0.5.0) — D3 geo</span></td></tr>
+<tr><td><code>FR-020</code></td><td>Embedded live project demos, not just links</td><td><span class="chip chip-p2">P2</span></td><td><span class="chip chip-done">Shipped (0.5.0) — sandboxed iframe</span></td></tr>
+<tr><td><code>FR-021</code></td><td>A reading-experience feature beyond plain blog text</td><td><span class="chip chip-p2">P2</span></td><td><span class="chip chip-done">Shipped (0.5.0) — highlight-to-share</span></td></tr>
+</tbody>
+</table>
+
+<div class="card" style="border-left:3px solid var(--indigo)">
+  <h4><span class="chip chip-new">Post-PRD</span> Contact Form System</h4>
+  <p style="margin-top:8px">Not in the original FR list. The v1 approach (a "copy email to clipboard" button) was replaced with a full system once it became clear a real inbox — not a clipboard trick — was table stakes for a product meant to demonstrate production judgment: <code>ContactMessage</code> model, public <code>POST /contact</code> with honeypot + rate limiting, and a dashboard inbox with read/unread state and reply-via-mailto. Documented in full in <code>CHANGELOG.md</code> under build 0.6.0.</p>
+</div>
+
+<h2>5. AI Feature Specification</h2>
+<p>Seven OpenRouter-backed models, routed through one shared service, used across five distinct product surfaces:</p>
+<table>
+<thead><tr><th>Surface</th><th>Endpoint</th><th>Default Model</th><th>Access</th></tr></thead>
+<tbody>
+<tr><td>Portfolio chat widget</td><td><code>POST /ai/chat/stream</code></td><td><code>gpt-4o-mini</code></td><td>Public, rate-limited</td></tr>
+<tr><td>Blog draft generator</td><td><code>POST /ai/generate/blog/stream</code></td><td><code>deepseek-chat-v3</code></td><td>Admin</td></tr>
+<tr><td>Project copy enhancer</td><td><code>POST /ai/generate/project</code></td><td><code>qwen3-coder-480b</code></td><td>Admin</td></tr>
+<tr><td>Analytics insights</td><td><code>POST /ai/insights</code></td><td><code>gpt-4o</code></td><td>Admin</td></tr>
+<tr><td>Bio generator (Settings)</td><td><code>POST /ai/complete</code></td><td><code>gpt-4o-mini</code></td><td>Admin</td></tr>
+</tbody>
+</table>
+<p style="margin-top:10px">Every model is selectable per-feature via a shared <code>ModelSelector</code>/<code>ModelDropdown</code> component. Every admin endpoint hard-caps <code>max_tokens</code> server-side regardless of client input (see SEC-08 in the security report). The public chat endpoint sanitizes every inbound message against known prompt-injection patterns before it reaches the model (SEC-03).</p>
+
+<h2>6. Success Metrics</h2>
+<table>
+<tbody>
+<tr><td><strong>Engagement</strong></td><td>Median session includes at least one interaction beyond scrolling (AI chat, terminal, project demo, or highlight-share)</td></tr>
+<tr><td><strong>Conversion</strong></td><td>Contact form submissions and CV downloads tracked as the two primary conversion events</td></tr>
+<tr><td><strong>List growth</strong></td><td>Subscriber count trending upward month-over-month, tracked in the analytics dashboard</td></tr>
+<tr><td><strong>Reliability</strong></td><td>Zero unhandled API errors reaching the client — every failure resolves to a typed <code>{ ok:false, error, statusCode }</code> response</td></tr>
+</tbody>
+</table>
+
+<h2>7. Design Rationale (Summary)</h2>
+<p>Full detail lives in <code>DESIGN_DECISIONS.html</code>. In brief: the three professional identities behind this product — mathematician, tailor, self-taught engineer — map directly onto specific product decisions rather than sitting in an "About" paragraph alone.</p>
+<ul>
+<li><strong>Mathematics →</strong> the D3 visualizations, the type-safety discipline (zero <code>any</code> across the codebase), the explicit state-machine thinking in components like the contact form and AI chat.</li>
+<li><strong>Tailoring →</strong> the Desert Monarch design system's restraint — a tailor doesn't add embellishment that doesn't serve fit; every Hausa motif in this product is load-bearing UI (a loading spinner, a nav indicator, an avatar frame), never decoration for its own sake.</li>
+<li><strong>Self-taught →</strong> the documentation discipline itself — this PRD, the changelog, the bug report, and the git history exist because a self-taught engineer's proof of process matters as much as the output.</li>
+</ul>
+
+<h2>8. Risks &amp; Mitigations</h2>
+<table>
+<thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+<tbody>
+<tr><td>OpenRouter cost overrun from an abusive user</td><td>Per-endpoint rate limiting + server-side <code>max_tokens</code> ceiling regardless of client input (SEC-08)</td></tr>
+<tr><td>Contact form / subscribe abused as a spam vector</td><td>Honeypot field, rate limiting, disposable-domain blocklist (SEC-07)</td></tr>
+<tr><td>Admin account compromise</td><td>Short-lived (15 min) access tokens, httpOnly refresh cookie, bcrypt hash, startup-enforced 32-char minimum JWT secret (SEC-06)</td></tr>
+<tr><td>Cultural motifs read as decorative rather than intentional</td><td>Every Hausa component is wired to actual UI function (see §7) — verified during design review, not left to interpretation</td></tr>
+<tr><td>Monorepo package resolution breaking on a fresh clone</td><td><code>pnpm-workspace.yaml</code> + properly built <code>dist/</code> output for shared packages, verified against a real build (see build 0.7.0 in <code>CHANGELOG.md</code>)</td></tr>
+</tbody>
+</table>
+
+<h2>9. Out of Scope for Current Version</h2>
+<ul>
+<li>Multi-language i18n (Hausa-language toggle) — noted as a plausible future direction, not committed</li>
+<li>A public API for third parties to query project/blog data — the API is currently first-party only</li>
+<li>Automated CI/CD pipeline definition — deployment is currently manual (Vercel/Railway git-push triggers only)</li>
+</ul>
+
+</div>
+<footer>DevCraft Portfolio — Product Requirements Document, Refined Edition · Reflects shipped state as of build v0.7.0</footer>
+</body>
+</html>

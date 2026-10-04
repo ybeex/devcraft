@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DevCraft — Type Safety & Module Resolution Sweep</title>
+<style>
+:root{--canvas:#fdfbfa;--card:#f5eee6;--raised:#ebdccb;--rim:#dec5ad;--brand:#b27343;--ink:#221e17;--dim:#6b5647;--ghost:#b19785;--indigo:#1a3f6f;--red:#dc2626;--green:#059669;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--canvas);color:var(--ink);line-height:1.7;font-size:14px}
+.cover{padding:56px clamp(24px,8vw,120px) 40px;background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(178,115,67,.15),transparent 65%),var(--canvas);}
+.cover h1{font-family:Georgia,serif;font-size:clamp(28px,4.5vw,44px);font-weight:700;letter-spacing:-1px;line-height:1.15;margin-bottom:10px}
+.cover p{color:var(--dim);font-size:15px;max-width:600px}
+.container{max-width:1000px;margin:0 auto;padding:0 clamp(24px,6vw,80px) 60px}
+.summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:24px 0}
+.sum-card{border-radius:14px;padding:16px;border:1px solid var(--rim);background:var(--card)}
+.sum-val{font-size:26px;font-weight:800;margin-bottom:4px}
+.sum-lbl{font-size:11px;color:var(--dim)}
+.green{color:var(--green)}.brand{color:var(--brand)}.red{color:var(--red)}
+h2{font-family:Georgia,serif;font-size:22px;font-weight:700;margin:36px 0 14px;padding-top:36px;border-top:1px solid var(--rim)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0}
+th{text-align:left;padding:9px 11px;background:var(--raised);border-bottom:1px solid var(--rim);font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim)}
+td{padding:9px 11px;border-bottom:1px solid var(--rim);vertical-align:top}
+tr:last-child td{border:none}
+code{font-family:monospace;font-size:11.5px;background:var(--raised);padding:1px 5px;border-radius:4px;color:var(--brand)}
+.badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:700}
+.badge-fixed{background:rgba(5,150,105,.1);color:var(--green)}
+.badge-new{background:rgba(178,115,67,.12);color:var(--brand)}
+footer{padding:32px clamp(24px,6vw,80px);border-top:1px solid var(--rim);background:var(--card);font-size:11.5px;color:var(--ghost);text-align:center}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:6px">DevCraft Portfolio · Second Audit</div>
+  <h1>Type Safety &amp; Module Resolution Sweep</h1>
+  <p>Extensive follow-up pass: contact form system built end-to-end, every remaining <code>any</code> type eliminated, and pnpm workspace resolution fixed so <code>@devcraft/types</code> / <code>@devcraft/db</code> resolve correctly.</p>
+</div>
+
+<div class="container">
+
+<div class="summary">
+  <div class="sum-card"><div class="sum-val brand">1</div><div class="sum-lbl">Full contact system built</div></div>
+  <div class="sum-card"><div class="sum-val red">5</div><div class="sum-lbl">Missing config files found</div></div>
+  <div class="sum-card"><div class="sum-val red">17</div><div class="sum-lbl">Files with <code>any</code> found</div></div>
+  <div class="sum-card"><div class="sum-val green">0</div><div class="sum-lbl"><code>any</code> remaining</div></div>
+  <div class="sum-card"><div class="sum-val brand">79</div><div class="sum-lbl">Total source files</div></div>
+</div>
+
+<h2 style="border:none;padding-top:0;margin-top:0">1. Contact Form System</h2>
+<table>
+<thead><tr><th>Layer</th><th>Change</th><th></th></tr></thead>
+<tbody>
+<tr><td>Schema</td><td><code>ContactMessage</code> model added — name, email, subject, message, read flag, IP/UA</td><td><span class="badge badge-new">NEW</span></td></tr>
+<tr><td>API</td><td><code>POST /contact</code> public endpoint — honeypot field, 3/hr rate limit, 8KB body cap</td><td><span class="badge badge-new">NEW</span></td></tr>
+<tr><td>API</td><td><code>/admin/contacts</code> CRUD + <code>/admin/contacts/unread-count</code></td><td><span class="badge badge-new">NEW</span></td></tr>
+<tr><td>Component</td><td><code>ContactForm.tsx</code> replaces the old email-copy button entirely</td><td><span class="badge badge-new">NEW</span></td></tr>
+<tr><td>Dashboard</td><td><code>/dashboard/contacts</code> inbox — list/detail pane, mark read, delete, mailto reply</td><td><span class="badge badge-new">NEW</span></td></tr>
+<tr><td>Nav</td><td>"Inbox" sidebar item with live unread badge, polls every 30s</td><td><span class="badge badge-new">NEW</span></td></tr>
+</tbody>
+</table>
+
+<h2>2. Module Resolution — "Cannot find module '@devcraft/types'"</h2>
+<table>
+<thead><tr><th>Root Cause</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><code>pnpm-workspace.yaml</code> was <strong>completely missing</strong>. pnpm ignores the <code>workspaces</code> field in <code>package.json</code> — that's a Yarn/npm-only convention.</td><td>Created <code>pnpm-workspace.yaml</code> at repo root listing <code>apps/*</code> and <code>packages/*</code></td></tr>
+<tr><td><code>apps/web/tsconfig.json</code> never existed</td><td>Created with <code>moduleResolution: bundler</code> and explicit path mapping to <code>packages/types/src/index.ts</code></td></tr>
+<tr><td><code>packages/types/tsconfig.json</code> never existed</td><td>Created with <code>composite: true</code></td></tr>
+<tr><td><code>packages/db/tsconfig.json</code> never existed</td><td>Created with <code>composite: true</code></td></tr>
+<tr><td><code>tsconfig.base.json</code> existed but nothing extended it — an orphaned file</td><td>All four child configs now use <code>"extends": "../../tsconfig.base.json"</code></td></tr>
+<tr><td>Package <code>exports</code> maps were missing the <code>types</code> condition</td><td>Both packages now export <code>types</code>/<code>import</code>/<code>require</code>/<code>default</code> conditions</td></tr>
+<tr><td>Web tsconfig had a path mapping to <code>@devcraft/db</code>, but <code>apps/web/package.json</code> never declared it as a dependency — and shouldn't (DB access is API-only)</td><td>Removed the unused mapping to keep the dependency graph honest</td></tr>
+</tbody>
+</table>
+
+<h2>3. Every Function Parameter Now Typed</h2>
+<table>
+<thead><tr><th>File</th><th>What was untyped</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><code>D3Charts.tsx</code></td><td>Every D3 callback: <code>d</code>, <code>i</code>, <code>_</code>, <code>g</code>, <code>this</code>, <code>event</code></td><td>All 5 chart components — explicit <code>DayCount</code>, <code>DonutSlice</code>, <code>BarItem</code>, <code>RadialSkill</code> types on every callback</td></tr>
+<tr><td><code>Terminal.tsx</code>, <code>ReadingMode.tsx</code>, <code>ContactForm.tsx</code>, <code>AiChat.tsx</code></td><td><code>React.ReactNode</code> / <code>React.FormEvent</code> / <code>React.KeyboardEvent</code> used without importing <code>React</code></td><td>Switched to named type imports: <code>ReactNode</code>, <code>FormEvent</code>, <code>KeyboardEvent</code>, <code>ChangeEvent</code></td></tr>
+<tr><td><code>ModelSelector.tsx</code></td><td><code>([id, cfg]) =></code>, <code>(e) =></code> untyped destructuring</td><td>Explicit <code>[ModelId, ModelConfig][]</code> entries array, typed <code>ChangeEvent&lt;HTMLSelectElement&gt;</code></td></tr>
+<tr><td><code>lib/models.ts</code></td><td><code>err: any</code>, implicit SSE payload shape</td><td><code>StreamResult</code>, <code>CallResult&lt;T&gt;</code>, <code>SseChunkPayload</code> interfaces</td></tr>
+<tr><td>AI dashboard components (3 files)</td><td>Missing return types, untyped state, loose config objects</td><td>Full typing pass — <code>InsightPriority</code>/<code>InsightType</code> unions, <code>Record</code>-based config</td></tr>
+<tr><td><code>projects/page.tsx</code>, <code>blog/page.tsx</code> (dashboard)</td><td>10+ instances of <code>(form as any)[key]</code></td><td>Generic <code>setField&lt;K extends keyof FormState&gt;()</code> helper — fully type-safe field updates</td></tr>
+<tr><td><code>lib/api.ts</code></td><td><code>URLSearchParams(params as any)</code> ×3; no handling for network failures (would throw uncaught)</td><td>Typed <code>toQueryString()</code> helper; top-level <code>try/catch</code> so <code>apiFetch</code> always resolves to <code>ApiResponse&lt;T&gt;</code>, never throws</td></tr>
+<tr><td><code>analytics.routes.ts</code>, <code>blog.routes.ts</code></td><td><code>device: device as any</code> — casting a plain string to Prisma's <code>DeviceType</code> enum</td><td>New shared <code>utils/device.ts</code> — <code>detectDevice()</code> returns the real enum type, zero casts needed</td></tr>
+<tr><td><code>ai.routes.ts</code></td><td>8 error responses missing <code>statusCode</code> (broke the <code>ApiError</code> contract); <code>let result: any</code> in insights parsing</td><td>All responses now match <code>ApiError</code> shape exactly; insights parsing uses <code>unknown</code> + runtime type-narrowing instead of <code>any</code></td></tr>
+<tr><td><code>AiProjectEnhancer.tsx</code></td><td>Locally redefined <code>type Era</code> instead of importing the shared one — a silent duplication bug</td><td>Now imports <code>Era</code> from <code>@devcraft/types</code>, single source of truth</td></tr>
+<tr><td>Dashboard overview <code>page.tsx</code></td><td><code>Promise.all([...]).then(([a, s]: any[])</code></td><td>Explicit tuple type: <code>[ApiResponse&lt;AnalyticsOverview&gt;, ApiResponse&lt;SubscriberAnalytics&gt;]</code></td></tr>
+<tr><td>Shared types package</td><td><code>AnalyticsOverview</code>/<code>SubscriberAnalytics</code> field names didn't match the real API response (<code>viewsThisMonth</code>/<code>viewsLastMonth</code> vs actual <code>viewsLastPeriod</code>)</td><td>Types corrected field-for-field against actual API output</td></tr>
+</tbody>
+</table>
+
+<h2>4. <code>notFound()</code> Narrowing &amp; <code>fetch</code> + <code>next</code> Typing</h2>
+<table>
+<thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><code>blog/[slug]/page.tsx</code> line 53: <code>post</code>/<code>related</code> did not exist on type <code>{post: any; related: any[];} | null</code></td><td>Explicit <code>BlogPostData</code> interface returned by a typed <code>getPost()</code> function, combined with the <code>if (!data) return notFound();</code> pattern — the explicit <code>return</code> is what lets TypeScript narrow <code>data</code> to non-null for the rest of the function body</td></tr>
+<tr><td><code>projects/[slug]/page.tsx</code></td><td>Same class of bug — same fix applied</td></tr>
+<tr><td>5 server component pages: <code>fetch(url, { next: { revalidate: 300 } })</code> — <code>'next' does not exist in type 'RequestInit'</code></td><td>New <code>lib/fetch.ts</code> with a <code>NextFetchInit</code> type that extends <code>RequestInit</code> with Next.js's <code>next</code> cache option, plus <code>fetchJSON&lt;T&gt;()</code> / <code>fetchList&lt;T&gt;()</code> convenience wrappers. The one necessary type cast lives in a single contained spot instead of being repeated at every call site.</td></tr>
+</tbody>
+</table>
+
+<h2>5. Housekeeping</h2>
+<table>
+<tbody>
+<tr><td>Removed <code>recharts</code> dependency</td><td>Dashboard overview page now uses the same D3 components as the analytics page — one charting library instead of two, less bundle weight</td></tr>
+<tr><td>Verified zero duplicate exports in <code>@devcraft/types</code></td><td>Found and removed a duplicate <code>AuthTokens</code> interface definition</td></tr>
+</tbody>
+</table>
+
+</div>
+<footer>DevCraft Type Safety Sweep · All fixes verified via full-repository grep sweep — zero <code>any</code> usage remains outside of two explanatory code comments.</footer>
+</body>
+</html>
