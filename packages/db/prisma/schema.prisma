@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── ENUMS ──────────────────────────────────────────────────────────────────────
+
+enum Era {
+  FOUNDATION
+  INTERNSHIP
+  SAAS
+}
+
+enum NotifType {
+  BLOG
+  PROJECT
+}
+
+enum DeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+}
+
+enum ReviewRelation {
+  TEAM
+  CLIENT
+  COLLEAGUE
+}
+
+// ── MODELS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@map("users")
+}
+
+model SiteSettings {
+  id           String   @id @default("site")
+  name         String   @default("DevCraft")
+  tagline      String   @default("Full-stack engineer. Mathematics graduate. Ex-tailor.")
+  availability String   @default("Open to new roles · Remote-first")
+  githubUrl    String   @default("https://github.com/yourusername")
+  linkedinUrl  String   @default("https://linkedin.com/in/yourusername")
+  twitterUrl   String   @default("https://twitter.com/yourusername")
+  email        String   @default("hello@devcraft.dev")
+  cvUrl        String   @default("/cv.pdf")
+  updatedAt    DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  tagline      String
+  description  String
+  era          Era
+  problem      String   @default("")
+  solution     String   @default("")
+  impact       String   @default("")
+  metrics      Json?
+  codeExamples Json     @default("[]")
+  techStack    String[]
+  liveUrl      String?
+  githubUrl    String?
+  thumbnailUrl String?
+  galleryUrls  String[]
+  featured     Boolean  @default(false)
+  published    Boolean  @default(false)
+  archived     Boolean  @default(false)
+  displayOrder Int      @default(0)
+  views        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([era, published, displayOrder])
+  @@map("projects")
+}
+
+model BlogPost {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  excerpt       String
+  content       String
+  coverImageUrl String?
+  tags          String[]
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  readingTime   Int?
+  views         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  notifications EmailNotification[]
+
+  @@index([published, publishedAt])
+  @@map("blog_posts")
+}
+
+model Subscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String?
+  unsubscribeToken String    @unique @default(cuid())
+  subscribedAt     DateTime  @default(now())
+  unsubscribedAt   DateTime?
+
+  @@index([unsubscribedAt])
+  @@map("subscribers")
+}
+
+model EmailNotification {
+  id             String    @id @default(cuid())
+  type           NotifType
+  blogPostId     String?
+  blogPost       BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: SetNull)
+  projectId      String?
+  subject        String
+  recipientCount Int
+  sentAt         DateTime  @default(now())
+
+  @@map("email_notifications")
+}
+
+model Review {
+  id           String         @id @default(cuid())
+  name         String
+  role         String?
+  company      String?
+  quote        String
+  rating       Int            @default(5)
+  initials     String
+  photoUrl     String?
+  linkedinUrl  String?
+  relation     ReviewRelation @default(COLLEAGUE)
+  published    Boolean        @default(true)
+  displayOrder Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([published, displayOrder])
+  @@map("reviews")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+  @@map("contact_messages")
+}
+
+model PageView {
+  id       String     @id @default(cuid())
+  path     String
+  referrer String?
+  country  String?
+  device   DeviceType @default(DESKTOP)
+  viewedAt DateTime   @default(now())
+
+  @@index([path, viewedAt])
+  @@index([viewedAt])
+  @@map("page_views")
+}
