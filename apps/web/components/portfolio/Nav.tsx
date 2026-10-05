@@ -137,7 +137,7 @@ export function PortfolioNav() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between transition-all duration-300"
+      className="portfolio-nav fixed top-0 left-0 right-0 z-50 flex items-center justify-between transition-all duration-300"
       style={{
         height: 72,
         padding: "0 clamp(16px, 5vw, 72px)",
@@ -246,9 +246,9 @@ export function PortfolioNav() {
           id="portfolio-mobile-menu"
           className="absolute top-19.5 left-4 right-4 rounded-2xl border p-4 flex flex-col gap-2"
           style={{
-            // Same material recipe as the scrolled desktop navbar: the page
-            // remains visible behind the panel instead of becoming a card.
-            background: "color-mix(in srgb, var(--canvas) 65%, transparent)",
+            // Match the mobile navbar's 72% canvas fill and glass blur so
+            // links stay readable while the page remains softly visible.
+            background: "color-mix(in srgb, var(--canvas) 72%, transparent)",
             borderColor: "color-mix(in srgb, var(--rim) 65%, transparent)",
             backdropFilter: "var(--glass-blur)",
             WebkitBackdropFilter: "var(--glass-blur)",
