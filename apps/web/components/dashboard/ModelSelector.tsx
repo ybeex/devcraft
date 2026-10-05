@@ -1,7 +1,8 @@
 "use client";
 
-import type { ChangeEvent, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { Brain, Gauge, Zap, type LucideIcon } from "lucide-react";
+import { BrandedSelect, type SelectOption } from "@/components/ui/Select";
 import { MODELS, SPEED_LABELS, type ModelId, type ModelConfig } from "@/lib/models";
 
 interface ModelSelectorProps {
@@ -13,6 +14,10 @@ interface ModelSelectorProps {
 
 /** Typed entries of MODELS — avoids re-deriving the cast at every call site */
 const MODEL_ENTRIES: [ModelId, ModelConfig][] = Object.entries(MODELS) as [ModelId, ModelConfig][];
+const MODEL_OPTIONS: SelectOption<ModelId>[] = MODEL_ENTRIES.map(([id, config]) => ({
+  value: id,
+  label: `${config.label} (${SPEED_LABELS[config.speed]})`,
+}));
 
 const SPEED_ICONS: Record<ModelConfig["speed"], LucideIcon> = {
   fast:   Zap,
@@ -85,23 +90,13 @@ export function ModelSelector({
 type ModelDropdownProps = Omit<ModelSelectorProps, "label">;
 
 export function ModelDropdown({ value, onChange, className }: ModelDropdownProps): ReactElement {
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>): void => {
-    onChange(e.target.value as ModelId);
-  };
-
   return (
-    <select
+    <BrandedSelect
       value={value}
-      onChange={handleChange}
-      className={`px-3 py-2 rounded-xl border text-[12px] font-medium outline-none
-        transition-all focus:border-(--brand) ${className ?? ""}`}
-      style={{ background: "var(--raised)", borderColor: "var(--rim)", color: "var(--ink)" }}
-    >
-      {MODEL_ENTRIES.map(([id, cfg]: [ModelId, ModelConfig]): ReactElement => (
-        <option key={id} value={id}>
-          {cfg.label} ({SPEED_LABELS[cfg.speed]})
-        </option>
-      ))}
-    </select>
+      onValueChange={onChange}
+      options={MODEL_OPTIONS}
+      ariaLabel="AI model"
+      className={`model-select-trigger ${className ?? ""}`}
+    />
   );
 }

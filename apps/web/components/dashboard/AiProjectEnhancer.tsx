@@ -5,6 +5,7 @@ import { Check, Sparkles } from "lucide-react";
 import { callAI, type ModelId, type CallResult } from "@/lib/models";
 import { ModelDropdown } from "./ModelSelector";
 import { Button } from "@/components/ui/Button";
+import { BrandedSelect } from "@/components/ui/Select";
 import type { Era } from "@devcraft/types";
 
 interface EnhancedProject {
@@ -94,7 +95,6 @@ export function AiProjectEnhancer({
   };
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>): void => setTitle(e.target.value);
-  const handleEraChange   = (e: ChangeEvent<HTMLSelectElement>): void => setEra(e.target.value as Era);
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>): void => setNotes(e.target.value);
 
   return (
@@ -114,17 +114,14 @@ export function AiProjectEnhancer({
           />
         </div>
         <div>
-          <label className="block text-[12px] font-semibold mb-1.5" style={{ color: "var(--dim)" }}>Era</label>
-          <select
+          <label htmlFor="ai-project-era" className="block text-[12px] font-semibold mb-1.5" style={{ color: "var(--dim)" }}>Era</label>
+          <BrandedSelect
+            id="ai-project-era"
             value={era}
-            onChange={handleEraChange}
-            className="w-full px-4 py-2.5 rounded-xl border text-[13px] outline-none"
-            style={{ background: "var(--raised)", borderColor: "var(--rim)", color: "var(--ink)" }}
-          >
-            {ERA_ENTRIES.map(([v, l]: [Era, string]): ReactElement => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
+            onValueChange={setEra}
+            options={ERA_ENTRIES.map(([value, label]) => ({ value, label }))}
+            className="w-full px-4 py-2.5 text-[13px]"
+          />
         </div>
       </div>
 
