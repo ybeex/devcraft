@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ChangeEvent, type ReactNode, type ReactE
 import { ZaureArch } from "@/components/hausa";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
+import { BrandedSelect } from "@/components/ui/Select";
 
 // ── TYPES ─────────────────────────────────────────────────────────────────────
 
@@ -92,14 +93,16 @@ export function ContactForm(): ReactElement {
 
   type FieldChangeEvent = ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
 
-  const change = (field: keyof FormState) =>
-    (e: FieldChangeEvent): void => {
-      const nextValue: string = e.target.value;
+  const changeValue = (field: keyof FormState) =>
+    (nextValue: string): void => {
       setForm((prev: FormState): FormState => ({ ...prev, [field]: nextValue }));
       if (errors[field]) {
         setErrors((prev: FormErrors): FormErrors => ({ ...prev, [field]: undefined }));
       }
     };
+
+  const change = (field: keyof FormState) =>
+    (e: FieldChangeEvent): void => changeValue(field)(e.target.value);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -226,21 +229,18 @@ export function ContactForm(): ReactElement {
       </div>
 
       <Field id="contact-subject" label="Subject" error={errors.subject} required>
-        <select
+        <BrandedSelect
           id="contact-subject"
           value={form.subject}
-          onChange={change("subject")}
+          onValueChange={changeValue("subject")}
+          placeholder="Select a subject…"
+          options={SUBJECTS.map((subject: string) => ({ value: subject, label: subject }))}
           disabled={busy}
-          aria-invalid={Boolean(errors.subject)}
-          aria-describedby={errors.subject ? "contact-subject-error" : undefined}
+          required
+          invalid={Boolean(errors.subject)}
+          describedBy={errors.subject ? "contact-subject-error" : undefined}
           className={inputClass}
-          style={{ ...inputStyle, cursor: "pointer" }}
-        >
-          <option value="">Select a subject…</option>
-          {SUBJECTS.map((s: string): ReactElement => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        />
       </Field>
 
       <Field id="contact-message" label="Message" error={errors.message} required>

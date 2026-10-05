@@ -577,6 +577,19 @@
   .aska-idle, .aska-medallion, .hero-glow, .aska-inner-dash { animation: none; }
 }
 
+/* ── MOBILE NAV GLASS ──────────────────────────────────────────────────────
+   The compact nav stays frosted even before the first scroll event, so the
+   mobile header remains legible over the hero artwork on first paint. */
+@media (max-width: 767px) {
+  .portfolio-nav {
+    background: color-mix(in srgb, var(--canvas) 72%, transparent) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--rim) 65%, transparent) !important;
+    box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.16) !important;
+  }
+}
+
 /* ── NAV LINKS ────────────────────────────────────────────────────────────
    CSS-driven (not inline-style-driven) so :hover can actually take effect —
    an inline style for the active/inactive color would otherwise always win
@@ -814,6 +827,70 @@
   clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
 }
 
+/* ── HERO RESPONSIVE COMPOSITION ─────────────────────────────────────────── */
+.hero-title { font-size: clamp(44px, 7.5vw, 86px); letter-spacing: -1.5px; }
+
+@media (max-width: 480px) {
+  .portfolio-hero { padding: 112px 20px 64px !important; }
+  .portfolio-hero > div:nth-of-type(3) { right: -13%; top: 42%; }
+  .hero-portrait {
+    display: block;
+    width: clamp(190px, 62vw, 280px);
+    height: auto;
+    opacity: 0.18 !important;
+  }
+  .portfolio-hero > div:last-of-type {
+    display: flex;
+    max-width: 100%;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .hero-badge {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1.35rem;
+  }
+  .hero-badge .swatch-tag {
+    max-width: 100%;
+    justify-content: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    line-height: 1.5;
+    font-size: clamp(9px, 2.7vw, 10.5px);
+    letter-spacing: clamp(0.06em, 0.3vw, 0.14em);
+  }
+  .hero-badge .pulse-dot { flex: none; margin-top: 0.25em; }
+  .hero-title { font-size: clamp(38px, 10.5vw, 48px); letter-spacing: -1.1px; }
+  .hero-sub { max-width: 35ch !important; font-size: clamp(15px, 4.2vw, 17px) !important; margin-bottom: 1.65rem; }
+  .hero-ctas {
+    display: flex;
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: clamp(6px, 2.2vw, 10px);
+    margin-bottom: 1.6rem;
+  }
+  .hero-ctas .magnetic-wrap { display: flex; flex: 1 1 0; min-width: 0; }
+  .hero-ctas .magnetic-wrap > a {
+    width: 100%;
+    min-width: 0;
+    padding-inline: clamp(8px, 2.8vw, 14px);
+    font-size: clamp(11px, 3.5vw, 14px);
+    white-space: nowrap;
+  }
+  .hero-ctas .magnetic-wrap:only-child { flex: 0 1 auto; }
+  .hero-social { justify-content: center; gap: 0.85rem; }
+}
+
+@media (max-width: 360px) {
+  .hero-title { font-size: clamp(34px, 10.5vw, 38px); }
+}
+
 /* ── HERO ENTRANCE ANIMATIONS ────────────────────────────────────────────── */
 
 .hero-badge  { animation: fade-up 0.7s var(--ease-out) 0.1s both; }
@@ -825,6 +902,115 @@
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
   to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* ── SHARED BRAND SELECT ──────────────────────────────────────────────────── */
+@layer components {
+  .brand-select-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    border: 1px solid var(--rim);
+    border-radius: 0.75rem;
+    background: var(--raised);
+    color: var(--ink);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .brand-select-trigger:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .brand-select-trigger[aria-invalid="true"] {
+    border-color: var(--neg-text);
+  }
+
+  .brand-select-chevron {
+    display: inline-flex;
+    flex: none;
+    color: var(--brand);
+  }
+
+  .brand-select-content {
+    z-index: 80;
+    min-width: var(--radix-select-trigger-width);
+    max-width: min(24rem, calc(100vw - 2rem));
+    max-height: min(20rem, var(--radix-select-content-available-height));
+    overflow: hidden;
+    padding: 0.35rem;
+    border: 1px solid var(--rim);
+    border-radius: 0.75rem;
+    background: var(--raised);
+    color: var(--ink);
+    box-shadow: var(--elevation-2);
+    transform-origin: var(--radix-select-content-transform-origin);
+  }
+
+  .brand-select-viewport {
+    max-height: min(20rem, var(--radix-select-content-available-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .brand-select-item {
+    position: relative;
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.65rem 2.5rem 0.65rem 0.85rem;
+    border-radius: 0.65rem;
+    color: var(--dim);
+    font-size: 0.875rem;
+    line-height: 1.35;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+  }
+
+  .brand-select-item[data-highlighted],
+  .brand-select-item[data-state="checked"] {
+    background: var(--brand-muted);
+    color: var(--brand);
+  }
+
+  .brand-select-item[data-state="checked"] { font-weight: 600; }
+  .brand-select-item[data-disabled] { opacity: 0.45; cursor: not-allowed; }
+
+  .brand-select-indicator {
+    position: absolute;
+    right: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    color: var(--brand);
+  }
+
+  .model-select-trigger {
+    min-width: 10.5rem;
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--rim);
+    border-radius: 0.75rem;
+    background: var(--raised);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brand-select-content[data-state="open"] {
+    animation: brand-select-enter 140ms var(--ease-out) both;
+  }
+}
+
+@keyframes brand-select-enter {
+  from { opacity: 0; transform: translateY(-3px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ── PROSE (blog posts) ──────────────────────────────────────────────────── */
@@ -959,6 +1145,18 @@
 /* Homepage AI code samples stay legible in both site themes. The tokens are
    intentionally scoped to the chat so blog rendering remains independent. */
 .ai-chat-message { overflow-wrap: anywhere; }
+.ai-streaming-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-streaming-caret {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--brand);
+  animation: ai-caret-blink 0.9s steps(2, start) infinite;
+}
+@keyframes ai-caret-blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .ai-streaming-caret { animation: none; } }
 .ai-markdown > :first-child { margin-top: 0; }
 .ai-markdown > :last-child { margin-bottom: 0; }
 .ai-markdown p { margin: 0.45rem 0; white-space: pre-wrap; }

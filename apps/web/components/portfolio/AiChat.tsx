@@ -123,6 +123,56 @@ export function AiChat(): ReactElement {
   const abortRef  = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const inputRef  = useRef<HTMLInputElement | null>(null);
+  const pendingDeltaRef = useRef<string>("");
+  const revealTimerRef = useRef<number | null>(null);
+  const revealDrainRef = useRef<(() => void) | null>(null);
+  const REVEAL_INTERVAL_MS = 75;
+  const REVEAL_CHARS_PER_TICK = 1;
+
+  const flushPendingDelta = useCallback((): void => {
+    revealTimerRef.current = null;
+    const pendingChars = Array.from(pendingDeltaRef.current);
+    if (pendingChars.length === 0) {
+      revealDrainRef.current?.();
+      revealDrainRef.current = null;
+      return;
+    }
+
+    const nextChars = pendingChars.slice(0, REVEAL_CHARS_PER_TICK).join("");
+    pendingDeltaRef.current = pendingChars.slice(REVEAL_CHARS_PER_TICK).join("");
+
+    setMessages((prev: Message[]): Message[] => {
+      const updated: Message[] = [...prev];
+      const last: Message | undefined = updated[updated.length - 1];
+      if (!last || last.role !== "assistant") return prev;
+      updated[updated.length - 1] = { ...last, content: last.content + nextChars };
+      return updated;
+    });
+
+    if (pendingDeltaRef.current) {
+      revealTimerRef.current = window.setTimeout(flushPendingDelta, REVEAL_INTERVAL_MS);
+    } else {
+      revealDrainRef.current?.();
+      revealDrainRef.current = null;
+    }
+  }, []);
+
+  const enqueueReveal = useCallback((delta: string): void => {
+    pendingDeltaRef.current += delta;
+    if (revealTimerRef.current === null) {
+      revealTimerRef.current = window.setTimeout(flushPendingDelta, REVEAL_INTERVAL_MS);
+    }
+  }, [flushPendingDelta]);
+
+  const waitForReveal = useCallback((): Promise<void> => {
+    if (pendingDeltaRef.current.length === 0 && revealTimerRef.current === null) return Promise.resolve();
+    return new Promise<void>((resolve) => { revealDrainRef.current = resolve; });
+  }, []);
+
+  useEffect((): (() => void) => () => {
+    abortRef.current?.abort();
+    if (revealTimerRef.current !== null) window.clearTimeout(revealTimerRef.current);
+  }, []);
 
   // Chat is intentionally local to this browser: no visitor messages are
   // stored on the server, but a reload no longer discards the conversation.
@@ -207,19 +257,12 @@ export function AiChat(): ReactElement {
             .filter((m) => m.content.trim().length > 0),
           model: "openai/gpt-4o-mini",
         },
-        (delta: string): void => {
-          setMessages((prev: Message[]): Message[] => {
-            const updated: Message[] = [...prev];
-            const last: Message | undefined = updated[updated.length - 1];
-            updated[updated.length - 1] = {
-              role:    "assistant",
-              content: (last?.content ?? "") + delta,
-            };
-            return updated;
-          });
-        },
+        enqueueReveal,
         abortRef.current.signal
       );
+
+      // Keep the writing state until queued characters have painted.
+      await waitForReveal();
 
       if (!result.ok) {
         setError(result.error ?? "Something went wrong.");
@@ -239,7 +282,7 @@ export function AiChat(): ReactElement {
       }
       setStreaming(false);
     },
-    [messages, streaming]
+    [messages, streaming, enqueueReveal, waitForReveal]
   );
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
@@ -295,17 +338,17 @@ export function AiChat(): ReactElement {
             style={{ background: "var(--raised)", borderColor: "var(--rim)" }}
           >
             <LaujeSpinner size={28} color="var(--brand)" spin={streaming} />
-            <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
               <p className="font-semibold text-[13px]" style={{ color: "var(--ink)" }}>DevCraft AI</p>
-              <p className="text-[11px]" style={{ color: "var(--ghost)" }}>
-                {streaming ? "Thinking…" : "Ask me anything about him"}
+              <p className="text-[11px]" role="status" aria-live="polite" style={{ color: "var(--ghost)" }}>
+                {streaming ? "Writing response…" : "Ask me anything about him"}
               </p>
             </div>
             <div className="w-2 h-2 rounded-full" style={{ background: streaming ? "var(--brand)" : "var(--pos-text)" }} />
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3" aria-live="polite" aria-busy={streaming}>
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3" aria-live={streaming ? "off" : "polite"} aria-busy={streaming}>
             {messages.length === 0 ? (
               <div className="flex flex-col gap-2 mt-2">
                 <p className="text-[12px] text-center mb-1" style={{ color: "var(--ghost)" }}>
@@ -334,17 +377,25 @@ export function AiChat(): ReactElement {
                       borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                     }}
                   >
-                    {m.content ? (m.role === "assistant" ? <MessageContent content={m.content} /> : m.content) : (m.role === "assistant" && streaming && i === messages.length - 1 ? (
-                      <span className="inline-flex gap-1">
-                        {BOUNCE_DOT_DELAYS.map((d: number): ReactElement => (
-                          <span
-                            key={d}
-                            className="w-1.5 h-1.5 rounded-full animate-bounce"
-                            style={{ background: "var(--brand)", animationDelay: `${d * 0.15}s` }}
-                          />
-                        ))}
-                      </span>
-                    ) : "")}
+                    {m.role === "assistant" && streaming && i === messages.length - 1 ? (
+                      m.content ? (
+                        <p className="ai-streaming-text" aria-label="AI response in progress">
+                          {m.content}<span className="ai-streaming-caret" aria-hidden="true" />
+                        </p>
+                      ) : (
+                        <span className="inline-flex gap-1" aria-label="AI is thinking">
+                          {BOUNCE_DOT_DELAYS.map((d: number): ReactElement => (
+                            <span
+                              key={d}
+                              className="w-1.5 h-1.5 rounded-full animate-bounce"
+                              style={{ background: "var(--brand)", animationDelay: `${d * 0.15}s` }}
+                            />
+                          ))}
+                        </span>
+                      )
+                    ) : m.content ? (
+                      m.role === "assistant" ? <MessageContent content={m.content} /> : m.content
+                    ) : ""}
                   </div>
                 </div>
               ))
