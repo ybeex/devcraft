@@ -209,12 +209,52 @@ export async function aiRoutes(app: FastifyInstance) {
           temperature: 0.7,
         });
 
-        let answer = "";
+        // Stream normal prose immediately, but hold fenced code until its
+        // complete block can be verified against the approved project bank.
+        // This preserves the code-safety check without buffering the whole answer.
+        let pending = "";
+        let insideCodeFence = false;
+        const writeDelta = (delta: string): void => {
+          if (delta) reply.raw.write(`data: ${JSON.stringify({ delta })}\n\n`);
+        };
+        const flushSafeText = (): void => {
+          while (pending) {
+            if (insideCodeFence) {
+              const closeIndex = pending.indexOf("```", 3);
+              if (closeIndex < 0) return;
+              const codeBlock = pending.slice(0, closeIndex + 3);
+              writeDelta(verifyAndAttributeCode(codeBlock, codeExamples));
+              pending = pending.slice(closeIndex + 3);
+              insideCodeFence = false;
+              continue;
+            }
+
+            const openIndex = pending.indexOf("```");
+            if (openIndex >= 0) {
+              writeDelta(pending.slice(0, openIndex));
+              pending = pending.slice(openIndex);
+              insideCodeFence = true;
+              continue;
+            }
+
+            // Keep a possible partial fence delimiter between provider chunks.
+            const partialFence = pending.endsWith("``") ? 2 : pending.endsWith("`") ? 1 : 0;
+            const safeLength = pending.length - partialFence;
+            if (safeLength > 0) writeDelta(pending.slice(0, safeLength));
+            pending = partialFence > 0 ? pending.slice(-partialFence) : "";
+            return;
+          }
+        };
+
         for await (const chunk of stream) {
-          answer += chunk.choices[0]?.delta?.content ?? "";
+          pending += chunk.choices[0]?.delta?.content ?? "";
+          flushSafeText();
         }
-        const verifiedAnswer = verifyAndAttributeCode(answer, codeExamples);
-        reply.raw.write(`data: ${JSON.stringify({ delta: verifiedAnswer })}\n\n`);
+        if (pending) {
+          writeDelta(insideCodeFence
+            ? "I can only share code snippets saved in a project's verified example bank."
+            : pending);
+        }
         reply.raw.write(`data: ${JSON.stringify({ done: true, finish: "stop" })}\n\n`);
       } catch (err) {
         app.log.error(err, "AI chat stream error");
