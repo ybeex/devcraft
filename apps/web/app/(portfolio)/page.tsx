@@ -12,7 +12,6 @@ import { SkillsSection, ContactSection, FooterSection } from "@/components/portf
 import { TestimonialsSection }  from "@/components/portfolio/Testimonials";
 import { CustomCursor }         from "@/components/ui/Cursor";
 import { AiChat }               from "@/components/portfolio/AiChat";
-import { Terminal }             from "@/components/portfolio/Terminal";
 import { ScrollInit }           from "./ScrollInit";
 import { JourneyMap } from "@/components/portfolio/JourneyMap.client"
 import { SawakiLineDivider } from "@/components/hausa";
@@ -81,8 +80,6 @@ export default async function HomePage(): Promise<ReactElement> {
        <SawakiLineDivider />
       <FooterSection />
 
-      {/* FR-016: Terminal CLI easter egg (press "/") */}
-      <Terminal />
       {/* AI Chat Widget */}
       <AiChat />
     </>
