@@ -1068,6 +1068,18 @@
 /* Homepage AI code samples stay legible in both site themes. The tokens are
    intentionally scoped to the chat so blog rendering remains independent. */
 .ai-chat-message { overflow-wrap: anywhere; }
+.ai-streaming-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-streaming-caret {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--brand);
+  animation: ai-caret-blink 0.9s steps(2, start) infinite;
+}
+@keyframes ai-caret-blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .ai-streaming-caret { animation: none; } }
 .ai-markdown > :first-child { margin-top: 0; }
 .ai-markdown > :last-child { margin-bottom: 0; }
 .ai-markdown p { margin: 0.45rem 0; white-space: pre-wrap; }
