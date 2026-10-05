@@ -52,6 +52,7 @@ export function HeroSection() {
   }, []);
 
   function handleMouseMove(e: MouseEvent<HTMLElement>) {
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setMouse({
       x: (e.clientX - rect.left) / rect.width - 0.5,
@@ -64,8 +65,8 @@ export function HeroSection() {
       id="hero"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setMouse({ x: 0, y: 0 })}
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden"
-      style={{ padding: "100px clamp(24px, 8vw, 120px) 80px", background: "var(--canvas)" }}
+      className="portfolio-hero relative min-h-100dvh flex flex-col justify-center overflow-hidden"
+      style={{ padding: "100px clamp(20px, 8vw, 120px) 80px", background: "var(--canvas)" }}
     >
       {/* Breathing background glow — isolated from the canvas so its opacity
           can animate independently */}
@@ -100,7 +101,7 @@ export function HeroSection() {
           width={540}
           height={540}
           priority
-          className="reveal aska-idle w-55 h-55 sm:w-85 sm:h-85 lg:w-130 lg:h-130 object-contain opacity-[0.28] sm:opacity-[0.34] lg:opacity-[0.42]"
+          className="hero-portrait reveal aska-idle w-55 h-55 sm:w-85 sm:h-85 lg:w-130 lg:h-130 object-contain opacity-[0.28] sm:opacity-[0.34] lg:opacity-[0.42]"
         />
       </div>
 
@@ -156,11 +157,7 @@ export function HeroSection() {
         {/* Main headline */}
         <h1
           className="hero-title font-display font-extrabold leading-[1.03] mb-5"
-          style={{
-            fontSize: "clamp(44px, 7.5vw, 86px)",
-            letterSpacing: "-1.5px",
-            color: "var(--ink)",
-          }}
+          style={{ color: "var(--ink)" }}
         >
           Full-stack<br />
           <span style={{ color: "var(--brand)" }}>engineer.</span><br />
