@@ -47,6 +47,76 @@ export function getToken(): string | null {
   return null;
 }
 
+const API_REQUEST_TIMEOUT_MS = 20_000;
+let refreshInFlight: Promise<string | null> | null = null;
+
+async function fetchWithTimeout(url: string, init: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  let timedOut = false;
+  const externalSignal = init.signal;
+  const forwardAbort = (): void => controller.abort(externalSignal?.reason);
+
+  if (externalSignal?.aborted) forwardAbort();
+  else externalSignal?.addEventListener("abort", forwardAbort, { once: true });
+
+  const timer = setTimeout((): void => {
+    timedOut = true;
+    controller.abort();
+  }, API_REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    // Consume the body before clearing the timer so stalled JSON responses are
+    // bounded too, not just the wait for response headers.
+    const body = [204, 205, 304].includes(response.status)
+      ? null
+      : await response.arrayBuffer();
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  } catch (error: unknown) {
+    if (timedOut) {
+      throw new Error(`API request timed out after ${API_REQUEST_TIMEOUT_MS / 1000} seconds.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    externalSignal?.removeEventListener("abort", forwardAbort);
+  }
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async (): Promise<string | null> => {
+      try {
+        const response = await fetchWithTimeout(`${AUTH_PROXY}/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!response.ok) return null;
+
+        const data = (await response.json()) as ApiResponse<AuthTokens>;
+        if (data.ok && data.data?.accessToken) {
+          setToken(data.data.accessToken);
+          return data.data.accessToken;
+        }
+      } catch {
+        // A failed or timed-out refresh is handled as an expired session.
+      }
+      return null;
+    })();
+  }
+
+  const pendingRefresh = refreshInFlight;
+  try {
+    return await pendingRefresh;
+  } finally {
+    if (refreshInFlight === pendingRefresh) refreshInFlight = null;
+  }
+}
+
 // ── QUERY STRING HELPER ────────────────────────────────────────────────────────
 // URLSearchParams only accepts Record<string, string>. Callers often pass
 // objects with optional/undefined/number/boolean fields, so this helper
@@ -72,9 +142,13 @@ async function apiFetch<T>(
   init: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(init.headers as Record<string, string> | undefined),
   };
+  // Fastify rejects an empty request when Content-Type says JSON. Only attach
+  // the JSON content type to string bodies (all current JSON payloads use one).
+  if (typeof init.body === "string" && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const tok: string | null = getToken();
   if (tok) headers["Authorization"] = `Bearer ${tok}`;
@@ -87,7 +161,7 @@ async function apiFetch<T>(
 
   let res: Response;
   try {
-    res = await fetch(requestUrl, {
+    res = await fetchWithTimeout(requestUrl, {
       ...init,
       headers,
       credentials: "include",
@@ -100,42 +174,22 @@ async function apiFetch<T>(
     return { ok: false, error: message, statusCode: 0 };
   }
 
-  // Silent token refresh on 401 (never recurse on the refresh call itself)
+  // Share refresh work across concurrent 401s instead of racing requests.
   if (res.status === 401 && path !== "/auth/login" && path !== "/auth/refresh") {
-    let refreshed: Response;
-    try {
-      refreshed = await fetch(`${AUTH_PROXY}/auth/refresh`, { method: "POST", credentials: "include" });
-    } catch {
+    const refreshedToken = await refreshAccessToken();
+    if (!refreshedToken) {
       setToken(null);
       return { ok: false, error: "Session expired. Please log in again.", statusCode: 401 };
     }
 
-    if (refreshed.ok) {
-      let data: ApiResponse<AuthTokens>;
-      try {
-        data = (await refreshed.json()) as ApiResponse<AuthTokens>;
-      } catch {
-        setToken(null);
-        return { ok: false, error: "Session expired. Please log in again.", statusCode: 401 };
-      }
-
-      if (data.ok) {
-        setToken(data.data.accessToken);
-        headers["Authorization"] = `Bearer ${data.data.accessToken}`;
-        try {
-          const retry: Response = await fetch(requestUrl, { ...init, headers, credentials: "include" });
-          return (await retry.json()) as ApiResponse<T>;
-        } catch (err: unknown) {
-          const message: string = err instanceof Error ? err.message : "Network request failed";
-          return { ok: false, error: message, statusCode: 0 };
-        }
-      }
+    headers["Authorization"] = `Bearer ${refreshedToken}`;
+    try {
+      const retry = await fetchWithTimeout(requestUrl, { ...init, headers, credentials: "include" });
+      return (await retry.json()) as ApiResponse<T>;
+    } catch (err: unknown) {
+      const message: string = err instanceof Error ? err.message : "Network request failed";
+      return { ok: false, error: message, statusCode: 0 };
     }
-
-    // Refresh didn't succeed — the session is gone, don't fall through to
-    // re-parsing the original 401 response (it may not be valid JSON).
-    setToken(null);
-    return { ok: false, error: "Session expired. Please log in again.", statusCode: 401 };
   }
 
   try {
