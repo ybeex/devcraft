@@ -24,7 +24,7 @@ import { TukulMarker } from "@/components/hausa";
 import { LogoMark } from "@/components/ui/LogoMark";
 import { PageLoading } from "@/components/ui/PageLoading";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { getToken, adminApi, setToken } from "@/lib/api";
+import { adminApi, setToken } from "@/lib/api";
 import type { ApiResponse, AuthTokens } from "@devcraft/types";
 
 interface NavItem {
@@ -65,10 +65,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Auth check on mount — try refresh, redirect to login if it fails.
-  // Wrapped in try/catch so an unexpected error (bad JSON, a thrown
-  // exception, etc.) can never leave the page stuck on the loading spinner —
-  // every path below is guaranteed to either grant access or redirect.
+  // Revalidate the refresh cookie on each dashboard mount instead of trusting
+  // a cached 15-minute access token. The API client bounds the request so a
+  // stalled network cannot leave the loading screen up indefinitely.
   useEffect(() => {
     let cancelled = false;
 
@@ -76,16 +75,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps): Rea
       let authorized = false;
 
       try {
-        if (getToken()) {
-          authorized = true;
-        } else {
-          const res = (await adminApi.auth.refresh()) as ApiResponse<AuthTokens>;
-          if (cancelled) return;
+        const res = (await adminApi.auth.refresh()) as ApiResponse<AuthTokens>;
+        if (cancelled) return;
 
-          if (res.ok && res.data?.accessToken) {
-            setToken(res.data.accessToken);
-            authorized = true;
-          }
+        if (res.ok && res.data?.accessToken) {
+          setToken(res.data.accessToken);
+          authorized = true;
         }
       } catch {
         authorized = false;
