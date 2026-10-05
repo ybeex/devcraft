@@ -20,6 +20,7 @@
     "next-cloudinary": "^6.16.0",
     "next-mdx-remote": "^6.0.0",
     "postprocessing": "^6.39.2",
+    "radix-ui": "1.6.7",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-markdown": "^10.1.0",

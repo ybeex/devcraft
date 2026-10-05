@@ -6,6 +6,7 @@ import { adminApi } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { EmptyState, LoadingRow } from "@/components/dashboard/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { BrandedSelect } from "@/components/ui/Select";
 import type { Review, ReviewRelation, ApiResponse } from "@devcraft/types";
 
 type Tab = "list" | "new";
@@ -418,17 +419,14 @@ export default function ReviewsDashboard(): ReactElement {
               />
             </div>
             <div>
-              <label className="block text-[12px] font-semibold mb-1.5" style={{ color: "var(--dim)" }}>Relation</label>
-              <select
+              <label htmlFor="review-relation" className="block text-[12px] font-semibold mb-1.5" style={{ color: "var(--dim)" }}>Relation</label>
+              <BrandedSelect
+                id="review-relation"
                 value={form.relation}
-                onChange={(e): void => setField("relation", e.target.value as ReviewRelation)}
-                className="w-full px-3.5 py-2.5 rounded-xl border text-[14px]"
-                style={{ borderColor: "var(--rim)", background: "var(--raised)", color: "var(--ink)" }}
-              >
-                {RELATION_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>{RELATION_LABELS[opt]}</option>
-                ))}
-              </select>
+                onValueChange={(relation): void => setField("relation", relation)}
+                options={RELATION_OPTIONS.map((relation) => ({ value: relation, label: RELATION_LABELS[relation] }))}
+                className="w-full px-3.5 py-2.5 text-[14px]"
+              />
             </div>
             <div>
               <label className="block text-[12px] font-semibold mb-1.5" style={{ color: "var(--dim)" }}>LinkedIn URL</label>
