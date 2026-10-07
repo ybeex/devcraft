@@ -38,7 +38,7 @@ A full-product developer portfolio monorepo — Next.js 14 frontend, Fastify API
 | Backend | Fastify 4, Node.js 20+, TypeScript (strict) |
 | Database | PostgreSQL via Prisma ORM |
 | AI | OpenRouter (7-model registry), Server-Sent Events streaming |
-| Email | Resend + HTML templates |
+| Email | Nodemailer (SMTP) + HTML templates |
 | Media | Cloudinary |
 | Auth | JWT (access + httpOnly refresh cookie), bcrypt |
 | Package management | pnpm workspaces, Turborepo |
@@ -164,7 +164,8 @@ All variables live in `.env.example` at the repo root and must be copied into bo
 | `ADMIN_PASSWORD_HASH` | api | bcrypt hash — never store the plaintext password |
 | `CORS_ORIGIN` | api | Comma-separated list of allowed origins. Validated as real URLs at startup. |
 | `API_PORT` / `API_HOST` | api | Defaults to `4000` / `0.0.0.0` |
-| `RESEND_API_KEY` | api | Transactional email (welcome, blog/project notifications) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | api | SMTP delivery for welcome and blog/project notification emails |
+| `EMAIL_FROM`, `EMAIL_REPLY_TO` | api | Optional sender and reply-to addresses for SMTP email |
 | `CLOUDINARY_*` | api | Media uploads (CV PDF, project thumbnails, blog covers) |
 | `OPENROUTER_API_KEY` | api | Powers all AI features. If missing, the API still boots but logs a warning and AI endpoints return a friendly error. |
 | `NEXT_PUBLIC_API_URL` | web | Base URL the frontend calls, e.g. `http://localhost:4000` in dev |
