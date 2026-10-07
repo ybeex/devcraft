@@ -243,30 +243,18 @@
   }
 }
 
-/* Restore default cursor in dashboard (admin only) */
-.dashboard-layout {
-  cursor: default;
-}
-
-/* Tailwind's preflight sets `cursor: pointer` directly on interactive
-   elements. A direct rule on an element always wins over an inherited
-   value from body, regardless of specificity — this is why the native
-   cursor was still appearing over buttons/links/inputs despite
-   `body { cursor: none }` above. !important mirrors the same technique
-   already used below to restore native cursors inside .dashboard-layout,
-   just inverted for the public site. */
-/* The custom cursor is an enhancement for mouse users only. Keeping the
-   browser cursor everywhere else prevents utility routes (which do not mount
-   CustomCursor) and touch/hybrid devices from losing their primary affordance. */
+/* Restore the native cursor unless this route actually mounts CustomCursor.
+   The portfolio installs .cursor-dot in the body; auth and utility routes do
+   not, so their standard pointer/text cursors remain available. */
 @media (hover: hover) and (pointer: fine) {
-  body,
-  button,
-  a,
-  input,
-  textarea,
-  select,
-  label,
-  [role="button"] {
+  body:has(.cursor-dot),
+  body:has(.cursor-dot) button,
+  body:has(.cursor-dot) a,
+  body:has(.cursor-dot) input,
+  body:has(.cursor-dot) textarea,
+  body:has(.cursor-dot) select,
+  body:has(.cursor-dot) label,
+  body:has(.cursor-dot) [role="button"] {
     cursor: none !important;
   }
 }
@@ -1396,6 +1384,10 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .proj-icon-btn, .proj-icon-btn:hover, .proj-icon-btn:active { transform: none; }
+}
+@media (hover: none) {
+  .project-links--overlay { opacity: 1; }
+  .proj-icon-btn { width: 44px; height: 44px; }
 }
 
 /* ── SEGMENTED CONTROL (sliding pill) ────────────────────────────────────── */
