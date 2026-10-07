@@ -49,7 +49,7 @@ export function AboutSection() {
                 style={{ width: 76, height: 76 }}
               >
                 <IconFill scale={1.12}>
-                  <Image src={image} alt="" width={76} height={76} className="object-contain" />
+                  <Image src={image} alt="" width={76} height={76} className="h-[76px] w-[76px] object-contain" />
                 </IconFill>
               </span>
 
