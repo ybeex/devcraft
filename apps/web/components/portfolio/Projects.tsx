@@ -40,14 +40,11 @@ export function ProjectPreview({ p, isSaas, interactive = false }: { p: Project;
 
         {/* Scaled-down live iframe — rendered at 2x and scaled to 50% so a
             full desktop layout fits the card without looking cramped.
-            On the card (interactive=false) it stays pointer-events-none
-            since the preview itself is wrapped in an <a> to the live site
-            (see ProjectCard) — letting the iframe capture clicks there
-            would fight that link, and the Live/GitHub/Case-study icon
-            buttons overlaid on top of it. On the project detail page
-            (interactive=true) there's no surrounding <a>, so the preview
-            can be a genuinely usable, clickable live site instead of just
-            a picture of one. */}
+            On a card (interactive=false), it stays pointer-events-none so
+            the preview remains a visual, not a second navigation target;
+            the explicit Live/GitHub/Case-study icon buttons handle actions.
+            On the detail page (interactive=true), the iframe is usable while
+            the separate open-in-new-tab action remains available. */}
         <div
           className={interactive ? "absolute" : "absolute pointer-events-none"}
           style={{
@@ -64,17 +61,17 @@ export function ProjectPreview({ p, isSaas, interactive = false }: { p: Project;
           /* Sticky (always-on, not hover-gated) open-in-new-tab affordance —
              centered at the bottom so it never sits over the iframe's own
              top-of-page nav/header, wherever that happens to be. */
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+          <div className="absolute bottom-2 left-2 right-2 z-20 flex justify-center sm:bottom-3 sm:left-1/2 sm:right-auto sm:w-max sm:-translate-x-1/2">
             <a
               href={p.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="fill-trigger flex items-center gap-1.5 text-[12px] font-semibold px-4 py-2 rounded-full border shadow-lg transition-transform hover:-translate-y-0.5"
+              className="fill-trigger flex min-w-0 max-w-full items-center justify-center gap-1 rounded-full border px-3 py-2 text-[11px] font-semibold leading-tight shadow-lg transition-transform hover:-translate-y-0.5 sm:gap-1.5 sm:px-4 sm:text-[12px]"
               style={{ background: "var(--card)", borderColor: previewColor, color: previewColor, boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}
             >
-              <IconFill scale={1.25}><ExternalLink size={14} strokeWidth={2.1} aria-hidden="true" /></IconFill>
-              Open in new tab
-              <ArrowUpRight size={13} />
+              <IconFill scale={1.25} className="shrink-0"><ExternalLink size={14} strokeWidth={2.1} aria-hidden="true" /></IconFill>
+              <span className="min-w-0 text-center">Open in new tab</span>
+              <ArrowUpRight size={13} className="shrink-0" />
             </a>
           </div>
         ) : null}
@@ -108,20 +105,18 @@ function GithubMark({ size = 16 }: { size?: number }) {
 }
 
 /**
- * Live / GitHub / Case study as icon buttons.
- * Sits over the bottom-right of the preview (a SIBLING of the preview's <a>,
- * never inside it — nested anchors are invalid HTML), which lets the old
- * full-width CTA row go and the card shrink. Hidden until the card is
- * hovered or a button inside it gets keyboard focus, so the preview reads
- * clean by default. Each button carries aria-label + title so the icon-only
- * treatment stays accessible and gets a native tooltip.
+ * Live / GitHub / Case study as the only project-card navigation controls.
+ * They sit over the preview without wrapping it in a link, so the preview and
+ * card body remain non-clickable. On touch screens they stay visible; on
+ * pointer devices they reveal on hover or keyboard focus. Each icon carries
+ * an aria-label and title for accessible, self-describing navigation.
  */
 function ProjectLinks({ p, accent, overlay }: { p: Project; accent: string; overlay: boolean }) {
   return (
     <div
       className={
         overlay
-          ? "absolute bottom-3 right-3 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
+          ? "project-links--overlay absolute bottom-3 right-3 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
           : "flex items-center justify-end gap-2 mb-4"
       }
       style={{ ["--proj-accent" as string]: accent }}
@@ -183,19 +178,10 @@ export function ProjectCard({ p, era }: { p: Project; era: keyof typeof ERA_CONF
         style={{ background: `linear-gradient(90deg, ${cfg.cardTop}, color-mix(in srgb, ${cfg.cardTop} 35%, transparent))` }}
       />
 
-      {/* Thumbnail / live preview — links to the live site when available,
-          otherwise straight to the case study so every project stays
-          reachable even without a live deployment. */}
+      {/* The preview is intentionally not a link: only the explicit icon
+          actions below navigate, so card browsing never opens a destination. */}
       <div className="relative">
-        {p.liveUrl ? (
-          <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open live preview of ${p.title}`}>
-            <ProjectPreview p={p} isSaas={isSaas} />
-          </a>
-        ) : (
-          <Link href={`/projects/${p.slug}`} aria-label={`View case study for ${p.title}`}>
-            <ProjectPreview p={p} isSaas={isSaas} />
-          </Link>
-        )}
+        <ProjectPreview p={p} isSaas={isSaas} />
         {/* Icon buttons over the preview's bottom edge. With no preview at
             all there's nothing to overlay, so they fall back to a plain row
             at the top of the content instead. */}
@@ -212,11 +198,9 @@ export function ProjectCard({ p, era }: { p: Project; era: keyof typeof ERA_CONF
           </div>
         )}
         {/* Title */}
-        <Link href={`/projects/${p.slug}`} className="no-underline">
-          <h3 className="font-display font-bold text-[20px] leading-tight mb-2 transition-colors duration-200 hover:text-(--brand)" style={{ color: "var(--ink)" }}>
-            {p.title}
-          </h3>
-        </Link>
+        <h3 className="font-display font-bold text-[20px] leading-tight mb-2" style={{ color: "var(--ink)" }}>
+          {p.title}
+        </h3>
         <p className="text-[13px] leading-[1.65] mb-3" style={{ color: "var(--dim)" }}>
           {p.tagline}
         </p>
