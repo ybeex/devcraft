@@ -13,6 +13,10 @@ const config: NextConfig = {
         source: "/api/auth/:path*",
         destination: `${API_URL}/auth/:path*`,
       },
+      {
+        source: "/api/unsubscribe",
+        destination: `${API_URL}/unsubscribe`,
+      },
     ];
   },
   images: {
