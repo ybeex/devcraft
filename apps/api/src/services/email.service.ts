@@ -3,18 +3,23 @@ import nodemailer, { type Transporter } from "nodemailer";
 
 const BRAND_NAME = "DevCraft";
 const SMTP_USER = process.env.SMTP_USER?.trim();
-const FROM = process.env.EMAIL_FROM?.trim() || (
-  SMTP_USER && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(SMTP_USER)
-    ? `${BRAND_NAME} <${SMTP_USER}>`
-    : undefined
-);
+
+function formatFrom(value?: string): string | undefined {
+  const address = value?.trim();
+  if (!address) return undefined;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)
+    ? `${BRAND_NAME} <${address}>`
+    : address;
+}
+
+const FROM = formatFrom(process.env.EMAIL_FROM) || formatFrom(SMTP_USER);
 const REPLY_TO = process.env.EMAIL_REPLY_TO?.trim();
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!;
+const SITE_URL = "https://devcraft-me.vercel.app";
 const EMAIL_LOGO_CID = "devcraft-logo";
 const EMAIL_LOGO = readFileSync(new URL("../../../web/public/logo.png", import.meta.url));
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 const SITE_ORIGIN = SITE_URL.replace(/\/+$/, "");
-const API_ORIGIN = API_URL.replace(/\/+$/, "");
+// Mailbox and human unsubscribe requests go directly to the Railway API.
+const API_ORIGIN = "https://devcraft.up.railway.app";
 let transporter: Transporter | null = null;
 
 function getTransporter(): Transporter {
